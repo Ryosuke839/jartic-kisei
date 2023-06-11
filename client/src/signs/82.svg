@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Created with Vectornator (http://vectornator.io/) -->
+<svg height="400.0pt" stroke-miterlimit="10" style="fill-rule:nonzero;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;" version="1.1" viewBox="0 0 400 400" width="400.0pt" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs/>
+<clipPath id="ArtboardFrame">
+<rect height="400" width="400" x="0" y="0"/>
+</clipPath>
+<g clip-path="url(#ArtboardFrame)" id="名称未設定">
+<g opacity="1">
+<path d="M1.42109e-14 0L400 0L400 0L400 400L400 400L1.42109e-14 400L1.42109e-14 400L1.42109e-14 0L1.42109e-14 0Z" fill="#808080" fill-rule="nonzero" opacity="1" stroke="none"/>
+</g>
+<path d="M230.887 341.493C230.887 329.642 240.494 320.035 252.344 320.035C264.195 320.035 273.802 329.642 273.802 341.493C273.802 353.343 264.195 362.95 252.344 362.95C240.494 362.95 230.887 353.343 230.887 341.493Z" fill="none" opacity="1" stroke="#ffffff" stroke-linecap="butt" stroke-linejoin="miter" stroke-width="6"/>
+<path d="M308.87 341.493C308.87 329.642 318.476 320.035 330.327 320.035C342.177 320.035 351.784 329.642 351.784 341.493C351.784 353.343 342.177 362.95 330.327 362.95C318.476 362.95 308.87 353.343 308.87 341.493Z" fill="none" opacity="1" stroke="#ffffff" stroke-linecap="butt" stroke-linejoin="miter" stroke-width="6"/>
+<path d="M251.405 342.984L273.86 279.644L290.357 279.481" fill="none" opacity="1" stroke="#ffffff" stroke-linecap="butt" stroke-linejoin="miter" stroke-width="6"/>
+<path d="M333.117 341.317L292.854 341.317L265.02 303.586" fill="none" opacity="1" stroke="#ffffff" stroke-linecap="butt" stroke-linejoin="miter" stroke-width="6"/>
+<path d="M265.484 303.982L310.971 303.982L329.723 341.17" fill="none" opacity="1" stroke="#ffffff" stroke-linecap="butt" stroke-linejoin="miter" stroke-width="6"/>
+<path d="M296.013 341.512L313.144 292.736" fill="none" opacity="1" stroke="#ffffff" stroke-linecap="butt" stroke-linejoin="miter" stroke-width="6"/>
+<path d="M303.165 293.598L322.97 293.598" fill="none" opacity="1" stroke="#ffffff" stroke-linecap="butt" stroke-linejoin="miter" stroke-width="6"/>
+<path d="M283.564 341.119L303.368 341.119" fill="none" opacity="1" stroke="#ffffff" stroke-linecap="butt" stroke-linejoin="miter" stroke-width="12"/>
+<path d="M160-3.55271e-15L179.066-3.55271e-15L179.066-3.55271e-15L179.066 400L179.066 400L160 400L160 400L160-3.55271e-15L160-3.55271e-15Z" fill="#ffffff" fill-rule="nonzero" opacity="1" stroke="none"/>
+</g>
+</svg>

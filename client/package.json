@@ -1,0 +1,26 @@
+{
+  "name": "jartic-kisei",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "@googlemaps/google-maps-services-js": "^3.3.28",
+    "@googlemaps/js-api-loader": "^1.15.1",
+    "@types/google.maps": "^3.52.5",
+    "copy-webpack-plugin": "^11.0.0",
+    "dotenv-webpack": "^8.0.1",
+    "html-webpack-plugin": "^5.5.3",
+    "ts-loader": "^9.4.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4",
+    "webpack-cli": "^5.1.4"
+  }
+}

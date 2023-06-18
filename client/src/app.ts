@@ -4,6 +4,7 @@ const names = new Map([['1', '歩行者用道路'], ['2', '自転車用道路'],
 const columns = ["都道府県コード", "警察署コード", "関連警察署コード1", "関連警察署コード2", "関連警察署コード3", "関連警察署コード4", "関連警察署コード5", "関連警察署コード6", "関連警察署コード7", "関連警察署コード8", "共通規制種別コード", "点・線・面コード", "県別規制種別名称", "規制決定年月日", "都道府県別ユニークキー", "規制番号", "番号", null, "規制場所始点", "規制場所終点", "住所", "交差点名称", "区間または区域", "場所・区間1", "場所・区間2", "場所・区間3", "経由場所・区間", "1-路線1", "1-路線1(コード)", "1-路線2", "1-路線2(コード)", "1-路線3", "1-路線4", "バイパス名", "進入方向", "禁止する方向1", "禁止する方向2", "指定する方向1", "指定する方向2", "指定する方向3", "指定する方向4", "指定・禁止方向の別コード", "方向1_1", "方向1", "一時解除始", "一時解除終", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "関連規制1", "関連規制2", "方向・規制内容等", "既規制等", "規制台帳インデックス", "規制場所始点2", "規制場所始点3", "規制場所終点2", "規制場所終点3", "進路変更禁止区間・地点1", "距離･延長", "距離・延長2", "面積", "速度1", "速度2", "速度3", "速度4", "最低速度", "片側・両側コード", "信号の有無コード", "車両通行帯数", "車両通行帯　指定番号", "中央線の指定", "歩道数", "駐車可台数", "通行方法", "車両の通行区分を指定", "進行方向別通行区分", "道路状況", "側の指定", "側指定コード", "横断歩道設置本数", "停止線本数", "通行帯の指定", "車線数", "対象通行帯1", "対象通行帯2", "対象通行帯3", "対象通行帯4", "信号機種別", "交差点・単路の別", "通行帯内容", "指定通行帯", "専用通行帯", "鉄道路線名", "踏切名称", "踏切種別コード", "車道幅員", "停止禁止幅員", "交差点ID", "右左折の別コード", "右左折方向1コード", "右左折方向2コード", "右左折方向3コード", "右左折方法1コード", "右左折方法2コード", "右左折方法3コード", "左折できる方向コード", "指定区分", "指定方法", "通行区分", "通行方法2", "通行方法3", "駐車方法コード", "停車方法コード", "方位コード", "方法（但し書き)", "歩道通行部分コード", "パーキングメーター基数", "区別（高齢運転者等標章自動車）コード", "交差点形状名コード", "指定区間＿通行帯位置", "指定時間", "種別（横断歩道）コード", "信号機設置管理者（委任）", "制限重量", "設置する通行帯", "停止位置コード", "停止禁止部分コード", "停止禁止面積＿横", "停止禁止面積＿縦", "摘要 禁止する方向", "摘要 指定部分コード", "歩道状況　歩道切り下げコード", "路側帯の種類コード", "更新理由", "区間（備考）1", "備考"];
 const onewayDir = new Map([['2', true], ['3', false], ['4', true], ['6', false], ['7', false], ['8', false], ['9', false], ['10', true], ['11', true], ['12', true], ['13', true], ['14', true], ['15', false], ['16', true], ['20', true], ['21', false], ['22', true], ['23', true], ['24', false], ['25', false], ['26', false], ['27', false], ['28', false], ['29', false], ['30', false], ['32', true], ['33', false], ['34', true], ['35', false], ['36', false], ['37', false], ['38', false], ['39', true], ['40', false], ['41', false], ['42', true], ['44', false], ['45', false], ['46', true], ['47', true]]);
 const visible_kisei = new Map(Array.from(names.keys()).map(k => [k, true]));
+const visible_vehicle = new Array(48).fill(true);
 function getIcon(row: string[], iconSize: number): google.maps.Icon | undefined {
   const signs = new Set(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '19', '21', '22', '23', '24', '27', '28', '29', '30', '31', '32', '33', '34', '35', '46', '47', '48', '49', '50', '51', '53', '54', '55', '56', '57', '58', '59', '60', '61', '62', '63', '65', '66', '67', '70', '71', '72', '73', '74', '75', '76', '77', '78', '79', '80', '81', '82', '83', '84', '85', '86', '87', '88', '90', '92', '93', '94', '97', '98', '99', '100', '103', '106', '108']);
   const ident = (row: string[]) => row[10];
@@ -390,7 +391,62 @@ function render(bounds: google.maps.LatLngBounds, zoom: number): void {
   while (rendering);
   rendering = true;
   const iconSize = Math.pow(2, Math.max((zoom ? zoom : 0) - 17, 0) / 2) * 16;
-  const keys = new Map(kiseis.filter(r => visible_kisei.get(r.row[10])).map(r => [r.id, r]));
+  const keys = new Map(kiseis.filter(r => visible_kisei.get(r.row[10])).filter(r => {
+    let any = false;
+    const include = new Map<string, string>([
+      ['6', '000000000400'],
+      ['8', '000000000001'],
+      ['14', '000000000001'],
+      ['25', '000000000008'],
+      ['55', '000000000100'],
+      ['56', '000000000100'],
+      ['81', '000000000200'],
+      ['82', '000000000200'],
+      ['83', '000000000200'],
+      ['84', '000000000200'],
+    ]);
+    for (let i = 91; i < 136; i += 9) {
+      for (let j = 0; j < 4; ++j) {
+        if (r.row[i + 5 + j] != '') {
+          any = true;
+          let bits = Number(r.row[i + 5 + j]);
+          for (let k = 0; k < 12 && bits >= 1; ++k) {
+            if (bits % 10 == 1 && visible_vehicle[j * 12 + k]) {
+              return false;
+            }
+            bits = Math.floor(bits / 10);
+          }
+        }
+      }
+    }
+    if (include.has(r.row[10])) {
+      any = true;
+      for (let i = 0; i < 12; ++i) {
+        let digit = parseInt(include.get(r.row[10])!![i], 16);
+        for (let j = 0; j < 4; ++j) {
+          if ((digit & 8) != 0 && visible_vehicle[i * 4 + j]) {
+            return true;
+          }
+          digit <<= 1;
+        }
+      }
+    }
+    for (let i = 46; i < 91; i += 9) {
+      for (let j = 0; j < 4; ++j) {
+        if (r.row[i + 5 + j] != '') {
+          any = true;
+          let bits = Number(r.row[i + 5 + j]);
+          for (let k = 0; k < 12 && bits >= 1; ++k) {
+            if (bits % 10 == 1 && visible_vehicle[j * 12 + k]) {
+              return true;
+            }
+            bits = Math.floor(bits / 10);
+          }
+        }
+      }
+    }
+    return !any && visible_vehicle[0];
+  }).map(r => [r.id, r]));
   for (const [key, objs] of currentMarkers) {
     if (!keys.has(key)) {
       for (const obj of objs) {
@@ -722,46 +778,88 @@ function initMap(): void {
 
 addEventListener('change', e => {
   const check = e.target;
-  if (!(check instanceof HTMLInputElement) || !check.closest('#option') || check.parentNode == null) {
+  if (!(check instanceof HTMLElement) || !check.closest('#option') || check.parentNode == null) {
     return;
   }
 
   if (check.closest('#kisei-types')) {
-    if (check.name) {
-      visible_kisei.set(check.name, check.checked);
+    if (check instanceof HTMLInputElement) {
+      if (check.name) {
+        visible_kisei.set(check.name, check.checked);
+      }
+
+      check.closest('li')?.querySelector('ul')?.querySelectorAll('input').forEach(child => {
+        child.checked = check.checked
+        child.indeterminate = false;
+        if (child.name) {
+          visible_kisei.set(child.name, child.checked);
+        }
+      });
+
+      let current = check;
+      while (current) {
+        const parent = current.closest('ul')?.parentNode;
+        const next = parent?.querySelector('input');
+        if (!parent || !next) {
+          break;
+        }
+        if (current === next) {
+          break;
+        }
+        current = next;
+        const children = parent.querySelector('ul')?.querySelectorAll('input');
+        if (!children) {
+          continue;
+        }
+        const checkStatus = Array.from(children).map(e => e.checked);
+        const every  = checkStatus.every(Boolean);
+        const some = checkStatus.some(Boolean);
+        next.checked = every;   
+        next.indeterminate = !every && every != some;
+      }
+
+      renderLast();
     }
+  }
 
-    check.closest('li')?.querySelector('ul')?.querySelectorAll('input').forEach(child => {
-      child.checked = check.checked
-      child.indeterminate = false;
-      if (child.name) {
-        visible_kisei.set(child.name, child.checked);
-      }
-    });
+  if (check.closest('#vehicle-types')) {
+    const parent = check.closest('#vehicle-types');
+    if (check instanceof HTMLInputElement) {
+      visible_vehicle[Number(check.name)] = check.checked;
 
-    let current = check;
-    while (current) {
-      const parent = current.closest('ul')?.parentNode;
-      const next = parent?.querySelector('input');
-      if (!parent || !next) {
-        break;
+      let types = '';
+      for (let i = 0; i < 12; ++i) {
+        let sum = 0;
+        for (let j = 0; j < 4; ++j) {
+          const e = parent?.querySelector(`input[name="${i * 4 + j}"]`);
+          sum <<= 1;
+          sum |= (e as HTMLInputElement)?.checked ? 1 : 0;
+        }
+        types += sum.toString(16);
       }
-      if (current === next) {
-        break;
-      }
-      current = next;
-      const children = parent.querySelector('ul')?.querySelectorAll('input');
-      if (!children) {
-        continue;
-      }
-      const checkStatus = Array.from(children).map(e => e.checked);
-      const every  = checkStatus.every(Boolean);
-      const some = checkStatus.some(Boolean);
-      next.checked = every;   
-      next.indeterminate = !every && every != some;
+      console.log(types);
+
+      const select = document.getElementById('vehicle-preset') as HTMLSelectElement;
+      const option = select.options.namedItem(types);
+      select.options.selectedIndex = option?.index ?? select.options.length - 1;
+
+      renderLast();
     }
+    if (check instanceof HTMLSelectElement) {
+      if (check.value != '') {
+        for (let i = 0; i < 12; ++i) {
+          let digit = parseInt(check.value[i], 16);
+          for (let j = 0; j < 4; ++j) {
+            const e = parent?.querySelector(`input[name="${i * 4 + j}"]`);
+            (e as HTMLInputElement).checked = (digit & 8) != 0;
+            visible_vehicle[i * 4 + j] = (digit & 8) != 0;
+            digit <<= 1;
+          }
+        }
+      }
 
-    renderLast();
+      renderLast();
+    }
   }
 })
 

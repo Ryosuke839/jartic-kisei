@@ -354,32 +354,154 @@ function updateUrl(center?: google.maps.LatLng, zoom?: number, suffix?: string) 
     lastZoom = zoom;
   }
   if (suffix != undefined) {
-    lastSuffix = suffix;
+    if (suffix != lastSuffix) {
+      lastSuffix = suffix;
+      history.pushState(null, '', `${location.origin}${location.pathname.split('@')[0]}@${lastCenter.lat()},${lastCenter.lng()},${lastZoom}z${lastSuffix}`);
+    }
+  } else {
+    history.pushState(null, '', `${location.origin}${location.pathname.split('@')[0]}@${lastCenter.lat()},${lastCenter.lng()},${lastZoom}z${lastSuffix}`);
   }
-  history.replaceState(null, '', `${location.origin}${location.pathname.split('@')[0]}@${lastCenter.lat()},${lastCenter.lng()},${lastZoom}z${lastSuffix}`);
 }
 
+let currentKeys: string[] = [];
 function showInfo(key: string | undefined, e: google.maps.MapMouseEvent) {
-  if (e.latLng != null) {
-    if (currentWindow != null) {
-      currentWindow.close();
+  if (currentWindow != null) {
+    currentWindow.close();
+    currentKeys = [];
+  }
+  if (currentKeys.length > 0) {
+    return;
+  }
+  if (key == undefined || e.latLng == null) {
+    updateUrl(undefined, undefined, '');
+    return;
+  }
+  const ks = [key];
+  const contents = new Map<string, string>();
+  for (const [k, objs] of currentPolylines) {
+    for (const obj of objs) {
+      if (k != key && obj != null && google.maps.geometry.poly.isLocationOnEdge(e.latLng, obj, 10 * Math.pow(2, -lastZoom))) {
+        ks.push(k);
+        break;
+      }
     }
-    if (key != undefined) {
-      for (const kisei of kiseis) {
-        if (kisei.id == key) {
-          const url = getIcon(kisei.row, 0)?.url;
-          currentWindow = new google.maps.InfoWindow({
-            content: (url ? `<div style="background-image: url(${url}); background-repeat: no-repeat; background-size: 6em; background-position-x: right; background-color: rgba(255,255,255,0.5); background-blend-mode: color;">` : '<dev>') + kisei.row[10] + ' ' + names.get(kisei.row[10]) + '<br>' + rowToSubjects(kisei.row).join('<br>') + '<br>' + kisei.row.map((v, i) => (columns[i] != null && v != '') ? `[${i} ${columns[i]}] ${v}<br>` : '').join('') + '</div>',
-            ariaLabel: "Uluru",
-            position: e.latLng,
-          });
-          currentWindow.open(map);
-          currentWindow.addListener('closeclick', (_: any) => showInfo(undefined, e));
-          return;
+  }
+  for (const [k, obj] of currentPolygons) {
+    if (k != key && google.maps.geometry.poly.containsLocation(e.latLng, obj)) {
+      ks.push(k);
+    }
+  }
+  currentKeys = ks;
+  const keys = new Map(kiseis.map(r => [r.id, r]));
+  const element = document.createElement('div');
+  let content = '';
+  for (const k of ks) {
+    const kisei = keys.get(k);
+    if (kisei != undefined) {
+      const url = getIcon(kisei.row, 0)?.url;
+      content += '<div style="' + (url ? `background-image: url(${url}); background-repeat: no-repeat; background-size: 4.5em; ` : '') + 'padding-inline-start: 5em; min-height: 4.5em; margin-bottom: 0.5em;">';
+      if (currentPolylines.has(kisei.id)) {
+        content += `<span style="width: 5em; display: inline-block; margin: .5em 0 .5em 0; border: 1.5px solid ${getColor(kisei.row[10])};"></span><br>`;
+      } else if (currentPolygons.has(kisei.id)) {
+        content += `<span style="width: 5em; height: 1em; display: inline-block; border: 2px solid ${getColor(kisei.row[10])}; background-color: ${getColor(kisei.row[10])}80;"></span><br>`;
+      } else {
+        content += `<span style="display: inline-block; margin: .5em; border: 1.5px solid;"></span><br>`;
+      }
+      content += names.get(kisei.row[10]) + '<br>' + rowToSubjects(kisei.row).join('<br>');
+      content += '</div>';
+    }
+  }
+  element.innerHTML = content;
+  const a = document.createElement('a');
+  a.href = 'javascript: void(0);';
+  a.onclick = () => showDetail();
+  a.innerText = '詳細…';
+  element.appendChild(a);
+  currentWindow = new google.maps.InfoWindow({
+    content: element,
+    ariaLabel: "Uluru",
+    position: e.latLng,
+  });
+  currentWindow.open(map);
+  currentWindow.addListener('closeclick', (_: any) => showInfo(undefined, e));
+  updateUrl(undefined, undefined, `#${key}@${e.latLng.lat()},${e.latLng.lng()}`);
+}
+
+function showDetail() {
+  if (currentWindow != null) {
+    currentWindow.close();
+    currentWindow = null;
+  }
+  if (currentKeys.length == 0) {
+    return;
+  }
+  const keys = new Map(kiseis.map(r => [r.id, r]));
+  let content = '';
+  for (const k of currentKeys) {
+    const kisei = keys.get(k);
+    if (kisei != undefined) {
+      const url = getIcon(kisei.row, 0)?.url;
+      content += '<div style="' + (url ? `background-image: url(${url}); background-repeat: no-repeat; background-size: 4.5em; ` : '') + 'padding-inline-start: 5em; min-height: 4.5em;' + (k != currentKeys[0] ? ' margin-top: 0.5em;' : '') + '">';
+      if (currentPolylines.has(kisei.id)) {
+        content += `<span style="width: 5em; display: inline-block; margin: .5em 0 .5em 0; border: 1.5px solid ${getColor(kisei.row[10])};"></span><br>`;
+      } else if (currentPolygons.has(kisei.id)) {
+        content += `<span style="width: 5em; height: 1em; display: inline-block; border: 2px solid ${getColor(kisei.row[10])}; background-color: ${getColor(kisei.row[10])}80;"></span><br>`;
+      } else {
+        content += `<span style="display: inline-block; margin: .5em; border: 1.5px solid;"></span><br>`;
+      }
+      content += names.get(kisei.row[10]) + '<br>' + rowToSubjects(kisei.row).join('<br>');
+      content += '<br>' + kisei.row.map((v, i) => (columns[i] != null && v != '') ? `[${i} ${columns[i]}] ${v}<br>` : '').join('');
+      content += '</div>';
+    }
+  }
+  const width = window.innerWidth / parseFloat(getComputedStyle(document.body).fontSize);
+  const container = document.getElementById('map-container')!!;
+  const detail = document.getElementById('detail')!!;
+  const detail_content = document.getElementById('detail-content')!!;
+  if (width >= 60) {
+    container.style.flexDirection = 'row-reverse';
+    detail.style.width = '30em';
+    detail.style.height = '';
+  } else {
+    container.style.flexDirection = 'column';
+    detail.style.width = '100%';
+    detail.style.height = '50%';
+  }
+  detail.style.display = 'block';
+  history.pushState('detail', '');
+  detail_content.innerHTML = content;
+  const bounds = new google.maps.LatLngBounds();
+  for (const [key, objs] of currentMarkers) {
+    if (currentKeys.includes(key)) {
+      for (const obj of objs) {
+        if (obj != null) {
+          const latlng = obj.getPosition();
+          if (latlng != null) {
+            bounds.extend(latlng);
+          }
         }
       }
     }
   }
+  for (const [key, objs] of currentPolylines) {
+    if (currentKeys.includes(key)) {
+      for (const obj of objs) {
+        if (obj != null) {
+          for (const latlng of obj.getPath().getArray()) {
+            bounds.extend(latlng);
+          }
+        }
+      }
+    }
+  }
+  for (const [key, obj] of currentPolygons) {
+    if (currentKeys.includes(key)) {
+      for (const latlng of obj.getPath().getArray()) {
+        bounds.extend(latlng);
+      }
+    }
+  }
+  map.fitBounds(bounds);
 }
 
 function getDistance(coord1: {lat: number, lng: number}, coord2: {lat: number, lng: number}): number {
@@ -387,11 +509,12 @@ function getDistance(coord1: {lat: number, lng: number}, coord2: {lat: number, l
 }
 
 let rendering = false;
-function render(bounds: google.maps.LatLngBounds, zoom: number): void {
+let first = true;
+function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: string[] | null = null): void {
   while (rendering);
   rendering = true;
   const iconSize = Math.pow(2, Math.max((zoom ? zoom : 0) - 17, 0) / 2) * 16;
-  const keys = new Map(kiseis.filter(r => visible_kisei.get(r.row[10])).filter(r => {
+  const keys = new Map(kiseis.filter(r => !filterKeys || filterKeys.includes(r.id)).filter(r => visible_kisei.get(r.row[10])).filter(r => {
     let any = false;
     const include = new Map<string, string>([
       ['6', '000000000400'],
@@ -612,6 +735,12 @@ function render(bounds: google.maps.LatLngBounds, zoom: number): void {
     }
   }
   rendering = false;
+  if (first) {
+    if (lastSuffix != '') {
+      readState();
+    }
+    first = false;
+  }
 }
 
 let renderLast = () => {};
@@ -626,6 +755,7 @@ function initMap(): void {
     restriction: {latLngBounds: {east: 145.82, north: 45.53, south: 24.04, west: 122.93}},
     noClear: true,
   });
+  lastSuffix = location.hash;
 
   let lastZoom: number | undefined;
   let lastBounds: google.maps.LatLngBounds | undefined;
@@ -663,10 +793,12 @@ function initMap(): void {
       return;
     }
     const bounds = map.getBounds();
-    if (history.state != null) {
+    if (history.state != null && history.state != 'detail') {
       history.back();
     }
-    updateUrl(center, zoom);
+    if (history.state != 'detail') {
+      updateUrl(center, zoom);
+    }
     const iconSize = Math.pow(2, Math.max((zoom ? zoom : 0) - 17, 0) / 2) * 16;
 
     if (zoom != lastZoom) {
@@ -699,7 +831,7 @@ function initMap(): void {
       }
       currentMarkers.clear();
       rendering = false;
-      if (zoom < 15) {
+      if (zoom < 15 && document.getElementById('detail')!.style.display == 'none') {
         lastBounds = new google.maps.LatLngBounds;
         kiseis = [];
         document.getElementById('requireZoom')!.style.display = 'block';
@@ -709,6 +841,12 @@ function initMap(): void {
       }
     }
     if (!bounds) {
+      finish_impl();
+      return;
+    }
+    if (document.getElementById('detail')!.style.display != 'none') {
+      lastBounds = undefined;
+      render(bounds, zoom, currentKeys);
       finish_impl();
       return;
     }
@@ -775,6 +913,27 @@ function initMap(): void {
   map.addListener('click', (e: google.maps.MapMouseEvent) => showInfo(undefined, e));
   update_impl();
 };
+
+function readState() {
+  if (currentKeys.length > 0) {
+    currentKeys = [];
+    updateUrl(undefined, undefined, '');
+    map.panTo(lastCenter);
+    map.setZoom(lastZoom);
+    lastZoom = 100;
+    return;
+  }
+  const match = /^#([0-9a-f]+)(?:@([0-9.]+),([0-9.]+))?$/.exec(location.hash);
+  if (match == null) {
+    showInfo(undefined, { domEvent: new Event('dummy'), latLng: null, stop: () => { } });
+  } else {
+    if (match.length == 4) {
+      showInfo(match[1], { domEvent: new Event('dummy'), latLng: new google.maps.LatLng(parseFloat(match[2]), parseFloat(match[3])), stop: () => { } });
+    }
+  }
+}
+
+addEventListener('popstate', readState);
 
 addEventListener('change', e => {
   const check = e.target;

@@ -443,7 +443,7 @@ async fn main() -> std::io::Result<()> {
         .service(web::resource("/app.js").to(get_app))
         .service(web::resource("/signs/{name}").to(get_sign))
         .service(web::resource("/api").to(get_api)))
-        .bind(("127.0.0.1", 3000))?
+        .bind(("0.0.0.0", 3000))?
         .run()
         .await
 }

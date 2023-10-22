@@ -468,7 +468,9 @@ function showDetail() {
     detail.style.height = '50%';
   }
   detail.style.display = 'block';
-  history.pushState('detail', '');
+  if (history.state != 'detail') {
+    history.pushState('detail', '');
+  }
   detail_content.innerHTML = content;
   const bounds = new google.maps.LatLngBounds();
   for (const [key, objs] of currentMarkers) {
@@ -747,9 +749,11 @@ let renderLast = () => {};
 
 function initMap(): void {
   const params = location.pathname.match(/\/@(-?[\d.]+),(-?[\d.]+),(-?[\d.]+)z(?:\/(\w+)\/(\w+)\/(-?[\d.]+),(-?[\d.]+))?$/);
+  lastCenter = new google.maps.LatLng(params ? Number(params[1]) : 35.7, params ? Number(params[2]) : 139.7);
+  lastZoom =  params ? Number(params[3]) : 9;
   map = new google.maps.Map(document.getElementById("map") as HTMLElement, {
-    center: {lat: params ? Number(params[1]) : 35.7, lng: params ? Number(params[2]) : 139.7},
-    zoom: params ? Number(params[3]) : 9,
+    center: lastCenter,
+    zoom: lastZoom,
     minZoom: 5,
     mapId: '3370b5d2a2f454b2',
     restriction: {latLngBounds: {east: 145.82, north: 45.53, south: 24.04, west: 122.93}},
@@ -757,7 +761,6 @@ function initMap(): void {
   });
   lastSuffix = location.hash;
 
-  let lastZoom: number | undefined;
   let lastBounds: google.maps.LatLngBounds | undefined;
   let executing = false;
   let waiting = false;
@@ -929,6 +932,9 @@ function readState() {
   } else {
     if (match.length == 4) {
       showInfo(match[1], { domEvent: new Event('dummy'), latLng: new google.maps.LatLng(parseFloat(match[2]), parseFloat(match[3])), stop: () => { } });
+      if (history.state == 'detail') {
+        showDetail();
+      }
     }
   }
 }

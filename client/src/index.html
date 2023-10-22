@@ -58,264 +58,268 @@
                 <div id="option" style="width: 100%; box-sizing: border-box; padding: 1em; position: absolute; z-index: 101; background-color: white; display: none; max-height: 100%; overflow-y: auto;">
                     <div style="width: 100%; position: absolute; left: -1em; text-align: end; font-size: 2em;"><a href="javascript: void(0);" onclick="history.back();">×</a></div>
                     <h3>オプション</h3>
-                    <h4>表示する規制種別</h4>
-                    <ul id="kisei-types">
-                        <li>
-                            <label><input type="checkbox" checked>全て</label>
-                            <ul>
-                                <li>
-                                    <label><input type="checkbox" checked>通行止め</label>
-                                    <ul>
-                                        <li><label><input type="checkbox" checked name="1">歩行者用道路</label></li>
-                                        <li><label><input type="checkbox" checked name="2">自転車用道路</label></li>
-                                        <li><label><input type="checkbox" checked name="3">自転車及び歩行者用道路</label></li>
-                                        <li><label><input type="checkbox" checked name="4">通行止め</label></li>
-                                        <li><label><input type="checkbox" checked name="5">車両通行止め</label></li>
-                                        <li><label><input type="checkbox" checked name="6">大型自動二輪車及び普通自動二輪車二人乗り通行禁止</label></li>
-                                        <li><label><input type="checkbox" checked name="7">車両通行止め(踏切)</label></li>
-                                        <li><label><input type="checkbox" checked name="8">歩行者通行止め</label></li>
-                                        <li><label><input type="checkbox" checked name="9">重量制限</label></li>
-                                        <li><label><input type="checkbox" checked name="10">高さ制限</label></li>
-                                    </ul>
-                                </li>
-                                <li>
-                                    <label><input type="checkbox" checked>進行方向</label>
-                                    <ul>
-                                        <li><label><input type="checkbox" checked name="11">一方通行</label></li>
-                                        <li><label><input type="checkbox" checked name="12">指定方向外進行禁止</label></li>
-                                        <li><label><input type="checkbox" checked name="13">車両進入禁止</label></li>
-                                    </ul>
-                                </li>
-                                <li>
-                                    <label><input type="checkbox" checked>通行帯</label>
-                                    <ul>
-                                        <li><label><input type="checkbox" checked name="14">歩行者横断禁止</label></li>
-                                        <li><label><input type="checkbox" checked name="15">中央線</label></li>
-                                        <li><label><input type="checkbox" checked name="16">中央線の変移</label></li>
-                                        <li><label><input type="checkbox" checked name="17">追越しのための右側部分はみ出し通行禁止</label></li>
-                                        <li><label><input type="checkbox" checked name="18">右側通行</label></li>
-                                        <li><label><input type="checkbox" checked name="19">立ち入り禁止部分</label></li>
-                                        <li><label><input type="checkbox" checked name="20">車両通行帯</label></li>
-                                        <li><label><input type="checkbox" checked name="21">車両通行区分</label></li>
-                                        <li><label><input type="checkbox" checked name="22">専用通行帯</label></li>
-                                        <li><label><input type="checkbox" checked name="23">路線バス等の専用通行帯</label></li>
-                                        <li><label><input type="checkbox" checked name="24">路線バス等優先通行帯</label></li>
-                                        <li><label><input type="checkbox" checked name="25">牽引自動車の自動車専用道路第一通行帯通行指定区間</label></li>
-                                        <li><label><input type="checkbox" checked name="26">車線境界線</label></li>
-                                        <li><label><input type="checkbox" checked name="27">軌道敷内通行可</label></li>
-                                    </ul>
-                                </li>
-                                <li>
-                                    <label><input type="checkbox" checked>速度</label>
-                                    <ul>
-                                        <li><label><input type="checkbox" checked name="28">最高速度100km/h</label></li>
-                                        <li><label><input type="checkbox" checked name="29">最高速度80km/h</label></li>
-                                        <li><label><input type="checkbox" checked name="30">最高速度70km/h</label></li>
-                                        <li><label><input type="checkbox" checked name="31">最高速度60km/h</label></li>
-                                        <li><label><input type="checkbox" checked name="32">最高速度50km/h</label></li>
-                                        <li><label><input type="checkbox" checked name="33">最高速度40km/h</label></li>
-                                        <li><label><input type="checkbox" checked name="34">最高速度30km/h</label></li>
-                                        <li><label><input type="checkbox" checked name="35">最高速度30km/h未満</label></li>
-                                        <li><label><input type="checkbox" checked name="36">最高速度可変(法)－(50)km/h</label></li>
-                                        <li><label><input type="checkbox" checked name="37">最高速度可変(法)－(40)km/h</label></li>
-                                        <li><label><input type="checkbox" checked name="38">最高速度可変(法)－(30)km/h</label></li>
-                                        <li><label><input type="checkbox" checked name="39">最高速度可変(60)－(50)km/h</label></li>
-                                        <li><label><input type="checkbox" checked name="40">最高速度可変(50)－(40)km/h</label></li>
-                                        <li><label><input type="checkbox" checked name="41">最高速度可変(50)－(40･30)km/h</label></li>
-                                        <li><label><input type="checkbox" checked name="42">最高速度可変(50)－(30)km/h</label></li>
-                                        <li><label><input type="checkbox" checked name="43">最高速度可変(50)－(60)km/h</label></li>
-                                        <li><label><input type="checkbox" checked name="44">最高速度可変(40)－(50)km/h</label></li>
-                                        <li><label><input type="checkbox" checked name="45">最高速度可変(30)－(40)km/h</label></li>
-                                        <li><label><input type="checkbox" checked name="46">最高速度区域40km/h</label></li>
-                                        <li><label><input type="checkbox" checked name="47">最高速度区域30km/h</label></li>
-                                        <li><label><input type="checkbox" checked name="48">最高速度区域20km/h</label></li>
-                                        <li><label><input type="checkbox" checked name="49">最低速度</label></li>
-                                    </ul>
-                                </li>
-                                <li>
-                                    <label><input type="checkbox" checked>右左折</label>
-                                    <ul>
-                                        <li><label><input type="checkbox" checked name="50">車両横断禁止</label></li>
-                                        <li><label><input type="checkbox" checked name="51">転回禁止</label></li>
-                                        <li><label><input type="checkbox" checked name="52">進路変更禁止</label></li>
-                                        <li><label><input type="checkbox" checked name="53">追越し禁止</label></li>
-                                        <li><label><input type="checkbox" checked name="54">優先道路</label></li>
-                                        <li><label><input type="checkbox" checked name="55">原動機付自転車の右折方法(二段階)</label></li>
-                                        <li><label><input type="checkbox" checked name="56">原動機付自転車の右折方法(小回り)</label></li>
-                                        <li><label><input type="checkbox" checked name="57">右左折の方法</label></li>
-                                        <li><label><input type="checkbox" checked name="58">進行方向別通行区分</label></li>
-                                        <li><label><input type="checkbox" checked name="59">車両通行帯･進行方向別通行区分･(進路変更禁止)組合せ</label></li>
-                                        <li><label><input type="checkbox" checked name="60">進行方向</label></li>
-                                    </ul>
-                                </li>
-                                <li>
-                                    <label><input type="checkbox" checked>優先道路</label>
-                                    <ul>
-                                        <li><label><input type="checkbox" checked name="61">徐行</label></li>
-                                        <li><label><input type="checkbox" checked name="62">前方優先道路</label></li>
-                                        <li><label><input type="checkbox" checked name="63">一時停止</label></li>
-                                        <li><label><input type="checkbox" checked name="64">優先本線車道</label></li>
-                                    </ul>
-                                </li>
-                                <li>
-                                    <label><input type="checkbox" checked>駐停車</label>
-                                    <ul>
-                                        <li><label><input type="checkbox" checked name="65">駐停車禁止</label></li>
-                                        <li><label><input type="checkbox" checked name="66">駐車禁止区間</label></li>
-                                        <li><label><input type="checkbox" checked name="67">駐車禁止区域</label></li>
-                                        <li><label><input type="checkbox" checked name="68">車輪止め装置取付け区間</label></li>
-                                        <li><label><input type="checkbox" checked name="69">駐車余地</label></li>
-                                        <li><label><input type="checkbox" checked name="70">駐車可</label></li>
-                                        <li><label><input type="checkbox" checked name="71">停車可</label></li>
-                                        <li><label><input type="checkbox" checked name="72">時間制限駐車区間</label></li>
-                                        <li><label><input type="checkbox" checked name="73">駐車の方法(平行駐車)</label></li>
-                                        <li><label><input type="checkbox" checked name="74">駐車の方法(直角駐車)</label></li>
-                                        <li><label><input type="checkbox" checked name="75">駐車の方法(斜め駐車)</label></li>
-                                        <li><label><input type="checkbox" checked name="76">停止禁止部分</label></li>
-                                        <li><label><input type="checkbox" checked name="77">警音器</label></li>
-                                        <li><label><input type="checkbox" checked name="78">歩行者用路側帯</label></li>
-                                        <li><label><input type="checkbox" checked name="79">駐停車禁止路側帯</label></li>
-                                        <li><label><input type="checkbox" checked name="80">路側帯(一般)</label></li>
-                                    </ul>
-                                </li>
-                                <li>
-                                    <label><input type="checkbox" checked>歩行者・自転車</label>
-                                    <ul>
-                                        <li><label><input type="checkbox" checked name="81">普通自転車歩道通行可</label></li>
-                                        <li><label><input type="checkbox" checked name="82">普通自転車の歩道通行部分</label></li>
-                                        <li><label><input type="checkbox" checked name="83">普通自転車の交差点進入禁止</label></li>
-                                        <li><label><input type="checkbox" checked name="84">並進可</label></li>
-                                        <li><label><input type="checkbox" checked name="85">横断歩道</label></li>
-                                        <li><label><input type="checkbox" checked name="86">斜め横断可</label></li>
-                                        <li><label><input type="checkbox" checked name="87">自転車横断帯</label></li>
-                                    </ul>
-                                </li>
-                                <li>
-                                    <label><input type="checkbox" checked>路面標示</label>
-                                    <ul>
-                                        <li><label><input type="checkbox" checked name="88">安全地帯</label></li>
-                                        <li><label><input type="checkbox" checked name="89">安全地帯又は路上障害物接近</label></li>
-                                        <li><label><input type="checkbox" checked name="90">導流帯</label></li>
-                                        <li><label><input type="checkbox" checked name="91">路面電車停留場</label></li>
-                                        <li><label><input type="checkbox" checked name="92">停止線</label></li>
-                                        <li><label><input type="checkbox" checked name="93">二段停止線</label></li>
-                                    </ul>
-                                </li>
-                                <li>
-                                    <label><input type="checkbox" checked>その他</label>
-                                    <ul>
-                                        <li><label><input type="checkbox" checked name="94">左折可</label></li>
-                                        <li><label><input type="checkbox" checked name="95">危険物積載車両通行止め</label></li>
-                                        <li><label><input type="checkbox" checked name="96">最大幅</label></li>
-                                        <li><label><input type="checkbox" checked name="97">自動車専用</label></li>
-                                        <li><label><input type="checkbox" checked name="98">信号機</label></li>
-                                        <li><label><input type="checkbox" checked name="99">ゾーン30</label></li>
-                                    </ul>
-                                </li>
-                                <li>
-                                    <label><input type="checkbox" checked>駐車</label>
-                                    <ul>
-                                        <li><label><input type="checkbox" checked name="100">高齢運転者等標章自動車駐車可</label></li>
-                                        <li><label><input type="checkbox" checked name="101">高齢運転者等標章自動車停車可</label></li>
-                                        <li><label><input type="checkbox" checked name="102">高齢運転者等専用時間制限駐車区間</label></li>
-                                        <li><label><input type="checkbox" checked name="103">停車方法指定</label></li>
-                                        <li><label><input type="checkbox" checked name="104">PM（パーキングメータ）</label></li>
-                                        <li><label><input type="checkbox" checked name="105">PT（パーキングチケット）</label></li>
-                                    </ul>
-                                </li>
-                                <li>
-                                    <label><input type="checkbox" checked>交差点</label>
-                                    <ul>
-                                        <li><label><input type="checkbox" checked name="106">環状の交差点における右回り通行</label></li>
-                                        <li><label><input type="checkbox" checked name="107">車両通行帯及び通行区分</label></li>
-                                        <li><label><input type="checkbox" checked name="108">信号機の設置及び管理の委任</label></li>
-                                        <li><label><input type="checkbox" checked name="109">停車・駐車禁止交差点</label></li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-                    <h4>表示する対象車種</h4>
-                    <div id="vehicle-types">
-                        <select id="vehicle-preset">
-                            <option value="ffffffffffff" name="ffffffffffff">全て</option>
-                            <option value="f80000000000" name="f80000000000">普通乗用</option>
-                            <option value="e60000000000" name="e60000000000">中型乗用</option>
-                            <option value="e182c0000000" name="e182c0000000">特定中型乗用</option>
-                            <option value="e00ec0000000" name="e00ec0000000">大乗（大型バスを除く）</option>
-                            <option value="e00f80000000" name="e00f80000000">大型バス</option>
-                            <option value="c80000c00000" name="c80000c00000">普通貨物</option>
-                            <option value="c20000900000" name="c20000900000">中型貨物</option>
-                            <option value="c08200a80000" name="c08200a80000">特定中型貨物</option>
-                            <option value="c00a008c0000" name="c00a008c0000">大型貨物</option>
-                            <option value="c00000010000" name="c00000010000">小特</option>
-                            <option value="c00200088000" name="c00200088000">大特</option>
-                            <option value="e00000000c00" name="e00000000c00">大型二輪及び普通二輪（小型二輪を除く）</option>
-                            <option value="800000000200" name="800000000200">自転車</option>
-                            <option value="800000000900" name="800000000900">原付</option>
-                            <option value="e00000000c80" name="e00000000c80">小型二輪</option>
-                            <option value="800000000040" name="800000000040">軽車両（自転車を除く）</option>
-                            <option value="">カスタム</option>
-                        </select>
-                        <div style="display: flex;">
-                            <div>
-                                <label><input type="checkbox" checked name="0">車両</label><br>
-                                <label><input type="checkbox" checked name="1">自動車</label><br>
-                                <label><input type="checkbox" checked name="2">乗用</label><br>
-                                <label><input type="checkbox" checked name="3">普乗</label><br>
-                                <label><input type="checkbox" checked name="4">普通</label><br>
-                                <label><input type="checkbox" checked name="5">中乗</label><br>
-                                <label><input type="checkbox" checked name="6">中型</label><br>
-                                <label><input type="checkbox" checked name="7">特定中乗</label><br>
-                                <label><input type="checkbox" checked name="8">特定中型</label><br>
-                                <label><input type="checkbox" checked name="9">軽</label><br>
-                                <label><input type="checkbox" checked name="10">準中乗</label><br>
-                                <label><input type="checkbox" checked name="11">準中型</label>
-                            </div>
-                            <div>
-                                <label><input type="checkbox" checked name="12">大型</label><br>
-                                <label><input type="checkbox" checked name="13">大乗</label><br>
-                                <label><input type="checkbox" checked name="14">大型等</label><br>
-                                <label><input type="checkbox" checked name="15">大型バス</label><br>
-                                <label><input type="checkbox" checked name="16">バス</label><br>
-                                <label><input type="checkbox" checked name="17">マイクロ</label><br>
-                                <label><input type="checkbox" checked name="18">路線バス</label><br>
-                                <label><input type="checkbox" checked name="19">　</label><br>
-                                <label><input type="checkbox" checked name="20">　</label><br>
-                                <label><input type="checkbox" checked name="21">　</label><br>
-                                <label><input type="checkbox" checked name="22">　</label><br>
-                                <label><input type="checkbox" checked name="23">　</label>
-                            </div>
-                            <div>
-                                <label><input type="checkbox" checked name="24">貨物</label><br>
-                                <label><input type="checkbox" checked name="25">普貨</label><br>
-                                <label><input type="checkbox" checked name="26">特定中貨物</label><br>
-                                <label><input type="checkbox" checked name="27">中貨</label><br>
-                                <label><input type="checkbox" checked name="28">大貨等</label><br>
-                                <label><input type="checkbox" checked name="29">大貨</label><br>
-                                <label><input type="checkbox" checked name="30">準中貨</label><br>
-                                <label><input type="checkbox" checked name="31">小特</label><br>
-                                <label><input type="checkbox" checked name="32">大特</label><br>
-                                <label><input type="checkbox" checked name="33">　</label><br>
-                                <label><input type="checkbox" checked name="34">　</label><br>
-                                <label><input type="checkbox" checked name="35">　</label>
-                            </div>
-                            <div>
-                                <label><input type="checkbox" checked name="36">二輪</label><br>
-                                <label><input type="checkbox" checked name="37">自二輪</label><br>
-                                <label><input type="checkbox" checked name="38">自転車</label><br>
-                                <label><input type="checkbox" checked name="39">原付</label><br>
-                                <label><input type="checkbox" checked name="40">小二輪</label><br>
-                                <label><input type="checkbox" checked name="41">軽車両</label><br>
-                                <label><input type="checkbox" checked name="42">タクシー</label><br>
-                                <label><input type="checkbox" checked name="43">標章車</label><br>
-                                <label><input type="checkbox" checked name="44">けん引</label><br>
-                                <label><input type="checkbox" checked name="45">　</label><br>
-                                <label><input type="checkbox" checked name="46">　</label><br>
-                                <label><input type="checkbox" checked name="47">その他</label>
+                    <details>
+                        <summary style="margin: 1.33em 0; font-weight: bold;">表示する規制種別</summary>
+                        <ul id="kisei-types">
+                            <li>
+                                <label><input type="checkbox" checked>全て</label>
+                                <ul>
+                                    <li>
+                                        <label><input type="checkbox" checked>通行止め</label>
+                                        <ul>
+                                            <li><label><input type="checkbox" checked name="1">歩行者用道路</label></li>
+                                            <li><label><input type="checkbox" checked name="2">自転車用道路</label></li>
+                                            <li><label><input type="checkbox" checked name="3">自転車及び歩行者用道路</label></li>
+                                            <li><label><input type="checkbox" checked name="4">通行止め</label></li>
+                                            <li><label><input type="checkbox" checked name="5">車両通行止め</label></li>
+                                            <li><label><input type="checkbox" checked name="6">大型自動二輪車及び普通自動二輪車二人乗り通行禁止</label></li>
+                                            <li><label><input type="checkbox" checked name="7">車両通行止め(踏切)</label></li>
+                                            <li><label><input type="checkbox" checked name="8">歩行者通行止め</label></li>
+                                            <li><label><input type="checkbox" checked name="9">重量制限</label></li>
+                                            <li><label><input type="checkbox" checked name="10">高さ制限</label></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <label><input type="checkbox" checked>進行方向</label>
+                                        <ul>
+                                            <li><label><input type="checkbox" checked name="11">一方通行</label></li>
+                                            <li><label><input type="checkbox" checked name="12">指定方向外進行禁止</label></li>
+                                            <li><label><input type="checkbox" checked name="13">車両進入禁止</label></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <label><input type="checkbox" checked>通行帯</label>
+                                        <ul>
+                                            <li><label><input type="checkbox" checked name="14">歩行者横断禁止</label></li>
+                                            <li><label><input type="checkbox" checked name="15">中央線</label></li>
+                                            <li><label><input type="checkbox" checked name="16">中央線の変移</label></li>
+                                            <li><label><input type="checkbox" checked name="17">追越しのための右側部分はみ出し通行禁止</label></li>
+                                            <li><label><input type="checkbox" checked name="18">右側通行</label></li>
+                                            <li><label><input type="checkbox" checked name="19">立ち入り禁止部分</label></li>
+                                            <li><label><input type="checkbox" checked name="20">車両通行帯</label></li>
+                                            <li><label><input type="checkbox" checked name="21">車両通行区分</label></li>
+                                            <li><label><input type="checkbox" checked name="22">専用通行帯</label></li>
+                                            <li><label><input type="checkbox" checked name="23">路線バス等の専用通行帯</label></li>
+                                            <li><label><input type="checkbox" checked name="24">路線バス等優先通行帯</label></li>
+                                            <li><label><input type="checkbox" checked name="25">牽引自動車の自動車専用道路第一通行帯通行指定区間</label></li>
+                                            <li><label><input type="checkbox" checked name="26">車線境界線</label></li>
+                                            <li><label><input type="checkbox" checked name="27">軌道敷内通行可</label></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <label><input type="checkbox" checked>速度</label>
+                                        <ul>
+                                            <li><label><input type="checkbox" checked name="28">最高速度100km/h</label></li>
+                                            <li><label><input type="checkbox" checked name="29">最高速度80km/h</label></li>
+                                            <li><label><input type="checkbox" checked name="30">最高速度70km/h</label></li>
+                                            <li><label><input type="checkbox" checked name="31">最高速度60km/h</label></li>
+                                            <li><label><input type="checkbox" checked name="32">最高速度50km/h</label></li>
+                                            <li><label><input type="checkbox" checked name="33">最高速度40km/h</label></li>
+                                            <li><label><input type="checkbox" checked name="34">最高速度30km/h</label></li>
+                                            <li><label><input type="checkbox" checked name="35">最高速度30km/h未満</label></li>
+                                            <li><label><input type="checkbox" checked name="36">最高速度可変(法)－(50)km/h</label></li>
+                                            <li><label><input type="checkbox" checked name="37">最高速度可変(法)－(40)km/h</label></li>
+                                            <li><label><input type="checkbox" checked name="38">最高速度可変(法)－(30)km/h</label></li>
+                                            <li><label><input type="checkbox" checked name="39">最高速度可変(60)－(50)km/h</label></li>
+                                            <li><label><input type="checkbox" checked name="40">最高速度可変(50)－(40)km/h</label></li>
+                                            <li><label><input type="checkbox" checked name="41">最高速度可変(50)－(40･30)km/h</label></li>
+                                            <li><label><input type="checkbox" checked name="42">最高速度可変(50)－(30)km/h</label></li>
+                                            <li><label><input type="checkbox" checked name="43">最高速度可変(50)－(60)km/h</label></li>
+                                            <li><label><input type="checkbox" checked name="44">最高速度可変(40)－(50)km/h</label></li>
+                                            <li><label><input type="checkbox" checked name="45">最高速度可変(30)－(40)km/h</label></li>
+                                            <li><label><input type="checkbox" checked name="46">最高速度区域40km/h</label></li>
+                                            <li><label><input type="checkbox" checked name="47">最高速度区域30km/h</label></li>
+                                            <li><label><input type="checkbox" checked name="48">最高速度区域20km/h</label></li>
+                                            <li><label><input type="checkbox" checked name="49">最低速度</label></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <label><input type="checkbox" checked>右左折</label>
+                                        <ul>
+                                            <li><label><input type="checkbox" checked name="50">車両横断禁止</label></li>
+                                            <li><label><input type="checkbox" checked name="51">転回禁止</label></li>
+                                            <li><label><input type="checkbox" checked name="52">進路変更禁止</label></li>
+                                            <li><label><input type="checkbox" checked name="53">追越し禁止</label></li>
+                                            <li><label><input type="checkbox" checked name="54">優先道路</label></li>
+                                            <li><label><input type="checkbox" checked name="55">原動機付自転車の右折方法(二段階)</label></li>
+                                            <li><label><input type="checkbox" checked name="56">原動機付自転車の右折方法(小回り)</label></li>
+                                            <li><label><input type="checkbox" checked name="57">右左折の方法</label></li>
+                                            <li><label><input type="checkbox" checked name="58">進行方向別通行区分</label></li>
+                                            <li><label><input type="checkbox" checked name="59">車両通行帯･進行方向別通行区分･(進路変更禁止)組合せ</label></li>
+                                            <li><label><input type="checkbox" checked name="60">進行方向</label></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <label><input type="checkbox" checked>優先道路</label>
+                                        <ul>
+                                            <li><label><input type="checkbox" checked name="61">徐行</label></li>
+                                            <li><label><input type="checkbox" checked name="62">前方優先道路</label></li>
+                                            <li><label><input type="checkbox" checked name="63">一時停止</label></li>
+                                            <li><label><input type="checkbox" checked name="64">優先本線車道</label></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <label><input type="checkbox" checked>駐停車</label>
+                                        <ul>
+                                            <li><label><input type="checkbox" checked name="65">駐停車禁止</label></li>
+                                            <li><label><input type="checkbox" checked name="66">駐車禁止区間</label></li>
+                                            <li><label><input type="checkbox" checked name="67">駐車禁止区域</label></li>
+                                            <li><label><input type="checkbox" checked name="68">車輪止め装置取付け区間</label></li>
+                                            <li><label><input type="checkbox" checked name="69">駐車余地</label></li>
+                                            <li><label><input type="checkbox" checked name="70">駐車可</label></li>
+                                            <li><label><input type="checkbox" checked name="71">停車可</label></li>
+                                            <li><label><input type="checkbox" checked name="72">時間制限駐車区間</label></li>
+                                            <li><label><input type="checkbox" checked name="73">駐車の方法(平行駐車)</label></li>
+                                            <li><label><input type="checkbox" checked name="74">駐車の方法(直角駐車)</label></li>
+                                            <li><label><input type="checkbox" checked name="75">駐車の方法(斜め駐車)</label></li>
+                                            <li><label><input type="checkbox" checked name="76">停止禁止部分</label></li>
+                                            <li><label><input type="checkbox" checked name="77">警音器</label></li>
+                                            <li><label><input type="checkbox" checked name="78">歩行者用路側帯</label></li>
+                                            <li><label><input type="checkbox" checked name="79">駐停車禁止路側帯</label></li>
+                                            <li><label><input type="checkbox" checked name="80">路側帯(一般)</label></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <label><input type="checkbox" checked>歩行者・自転車</label>
+                                        <ul>
+                                            <li><label><input type="checkbox" checked name="81">普通自転車歩道通行可</label></li>
+                                            <li><label><input type="checkbox" checked name="82">普通自転車の歩道通行部分</label></li>
+                                            <li><label><input type="checkbox" checked name="83">普通自転車の交差点進入禁止</label></li>
+                                            <li><label><input type="checkbox" checked name="84">並進可</label></li>
+                                            <li><label><input type="checkbox" checked name="85">横断歩道</label></li>
+                                            <li><label><input type="checkbox" checked name="86">斜め横断可</label></li>
+                                            <li><label><input type="checkbox" checked name="87">自転車横断帯</label></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <label><input type="checkbox" checked>路面標示</label>
+                                        <ul>
+                                            <li><label><input type="checkbox" checked name="88">安全地帯</label></li>
+                                            <li><label><input type="checkbox" checked name="89">安全地帯又は路上障害物接近</label></li>
+                                            <li><label><input type="checkbox" checked name="90">導流帯</label></li>
+                                            <li><label><input type="checkbox" checked name="91">路面電車停留場</label></li>
+                                            <li><label><input type="checkbox" checked name="92">停止線</label></li>
+                                            <li><label><input type="checkbox" checked name="93">二段停止線</label></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <label><input type="checkbox" checked>その他</label>
+                                        <ul>
+                                            <li><label><input type="checkbox" checked name="94">左折可</label></li>
+                                            <li><label><input type="checkbox" checked name="95">危険物積載車両通行止め</label></li>
+                                            <li><label><input type="checkbox" checked name="96">最大幅</label></li>
+                                            <li><label><input type="checkbox" checked name="97">自動車専用</label></li>
+                                            <li><label><input type="checkbox" checked name="98">信号機</label></li>
+                                            <li><label><input type="checkbox" checked name="99">ゾーン30</label></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <label><input type="checkbox" checked>駐車</label>
+                                        <ul>
+                                            <li><label><input type="checkbox" checked name="100">高齢運転者等標章自動車駐車可</label></li>
+                                            <li><label><input type="checkbox" checked name="101">高齢運転者等標章自動車停車可</label></li>
+                                            <li><label><input type="checkbox" checked name="102">高齢運転者等専用時間制限駐車区間</label></li>
+                                            <li><label><input type="checkbox" checked name="103">停車方法指定</label></li>
+                                            <li><label><input type="checkbox" checked name="104">PM（パーキングメータ）</label></li>
+                                            <li><label><input type="checkbox" checked name="105">PT（パーキングチケット）</label></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <label><input type="checkbox" checked>交差点</label>
+                                        <ul>
+                                            <li><label><input type="checkbox" checked name="106">環状の交差点における右回り通行</label></li>
+                                            <li><label><input type="checkbox" checked name="107">車両通行帯及び通行区分</label></li>
+                                            <li><label><input type="checkbox" checked name="108">信号機の設置及び管理の委任</label></li>
+                                            <li><label><input type="checkbox" checked name="109">停車・駐車禁止交差点</label></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </details>
+                    <details>
+                        <summary style="margin: 1.33em 0; font-weight: bold;">表示する対象車種</summary>
+                        <div id="vehicle-types">
+                            <select id="vehicle-preset">
+                                <option value="ffffffffffff" name="ffffffffffff">全て</option>
+                                <option value="f80000000000" name="f80000000000">普通乗用</option>
+                                <option value="e60000000000" name="e60000000000">中型乗用</option>
+                                <option value="e182c0000000" name="e182c0000000">特定中型乗用</option>
+                                <option value="e00ec0000000" name="e00ec0000000">大乗（大型バスを除く）</option>
+                                <option value="e00f80000000" name="e00f80000000">大型バス</option>
+                                <option value="c80000c00000" name="c80000c00000">普通貨物</option>
+                                <option value="c20000900000" name="c20000900000">中型貨物</option>
+                                <option value="c08200a80000" name="c08200a80000">特定中型貨物</option>
+                                <option value="c00a008c0000" name="c00a008c0000">大型貨物</option>
+                                <option value="c00000010000" name="c00000010000">小特</option>
+                                <option value="c00200088000" name="c00200088000">大特</option>
+                                <option value="e00000000c00" name="e00000000c00">大型二輪及び普通二輪（小型二輪を除く）</option>
+                                <option value="800000000200" name="800000000200">自転車</option>
+                                <option value="800000000900" name="800000000900">原付</option>
+                                <option value="e00000000c80" name="e00000000c80">小型二輪</option>
+                                <option value="800000000040" name="800000000040">軽車両（自転車を除く）</option>
+                                <option value="">カスタム</option>
+                            </select>
+                            <div style="display: flex;">
+                                <div>
+                                    <label><input type="checkbox" checked name="0">車両</label><br>
+                                    <label><input type="checkbox" checked name="1">自動車</label><br>
+                                    <label><input type="checkbox" checked name="2">乗用</label><br>
+                                    <label><input type="checkbox" checked name="3">普乗</label><br>
+                                    <label><input type="checkbox" checked name="4">普通</label><br>
+                                    <label><input type="checkbox" checked name="5">中乗</label><br>
+                                    <label><input type="checkbox" checked name="6">中型</label><br>
+                                    <label><input type="checkbox" checked name="7">特定中乗</label><br>
+                                    <label><input type="checkbox" checked name="8">特定中型</label><br>
+                                    <label><input type="checkbox" checked name="9">軽</label><br>
+                                    <label><input type="checkbox" checked name="10">準中乗</label><br>
+                                    <label><input type="checkbox" checked name="11">準中型</label>
+                                </div>
+                                <div>
+                                    <label><input type="checkbox" checked name="12">大型</label><br>
+                                    <label><input type="checkbox" checked name="13">大乗</label><br>
+                                    <label><input type="checkbox" checked name="14">大型等</label><br>
+                                    <label><input type="checkbox" checked name="15">大型バス</label><br>
+                                    <label><input type="checkbox" checked name="16">バス</label><br>
+                                    <label><input type="checkbox" checked name="17">マイクロ</label><br>
+                                    <label><input type="checkbox" checked name="18">路線バス</label><br>
+                                    <label><input type="checkbox" checked name="19">　</label><br>
+                                    <label><input type="checkbox" checked name="20">　</label><br>
+                                    <label><input type="checkbox" checked name="21">　</label><br>
+                                    <label><input type="checkbox" checked name="22">　</label><br>
+                                    <label><input type="checkbox" checked name="23">　</label>
+                                </div>
+                                <div>
+                                    <label><input type="checkbox" checked name="24">貨物</label><br>
+                                    <label><input type="checkbox" checked name="25">普貨</label><br>
+                                    <label><input type="checkbox" checked name="26">特定中貨物</label><br>
+                                    <label><input type="checkbox" checked name="27">中貨</label><br>
+                                    <label><input type="checkbox" checked name="28">大貨等</label><br>
+                                    <label><input type="checkbox" checked name="29">大貨</label><br>
+                                    <label><input type="checkbox" checked name="30">準中貨</label><br>
+                                    <label><input type="checkbox" checked name="31">小特</label><br>
+                                    <label><input type="checkbox" checked name="32">大特</label><br>
+                                    <label><input type="checkbox" checked name="33">　</label><br>
+                                    <label><input type="checkbox" checked name="34">　</label><br>
+                                    <label><input type="checkbox" checked name="35">　</label>
+                                </div>
+                                <div>
+                                    <label><input type="checkbox" checked name="36">二輪</label><br>
+                                    <label><input type="checkbox" checked name="37">自二輪</label><br>
+                                    <label><input type="checkbox" checked name="38">自転車</label><br>
+                                    <label><input type="checkbox" checked name="39">原付</label><br>
+                                    <label><input type="checkbox" checked name="40">小二輪</label><br>
+                                    <label><input type="checkbox" checked name="41">軽車両</label><br>
+                                    <label><input type="checkbox" checked name="42">タクシー</label><br>
+                                    <label><input type="checkbox" checked name="43">標章車</label><br>
+                                    <label><input type="checkbox" checked name="44">けん引</label><br>
+                                    <label><input type="checkbox" checked name="45">　</label><br>
+                                    <label><input type="checkbox" checked name="46">　</label><br>
+                                    <label><input type="checkbox" checked name="47">その他</label>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </details>
                 </div>
                 <div id="about" style="width: 100%; box-sizing: border-box; padding: 1em; position: absolute; z-index: 101; background-color: white; display: none; max-height: 100%; overflow-y: auto;">
                     <div style="width: 100%; position: absolute; left: -1em; text-align: end; font-size: 2em;"><a href="javascript: void(0);" onclick="history.back();">×</a></div>

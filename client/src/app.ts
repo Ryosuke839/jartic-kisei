@@ -758,7 +758,7 @@ let renderLast = () => {};
 function initMap(): void {
   const params = location.pathname.match(/\/@(-?[\d.]+),(-?[\d.]+),(-?[\d.]+)z(?:\/(\w+)\/(\w+)\/(-?[\d.]+),(-?[\d.]+))?$/);
   lastCenter = new google.maps.LatLng(params ? Number(params[1]) : 35.7, params ? Number(params[2]) : 139.7);
-  lastZoom =  params ? Number(params[3]) : 9;
+  lastZoom = params ? Number(params[3]) : 9;
   map = new google.maps.Map(document.getElementById("map") as HTMLElement, {
     center: lastCenter,
     zoom: lastZoom,
@@ -798,6 +798,7 @@ function initMap(): void {
       finish_impl();
       return;
     }
+    const last_zoom = lastZoom;
     const center = map.getCenter();
     if (!center) {
       finish_impl();
@@ -812,7 +813,7 @@ function initMap(): void {
     }
     const iconSize = Math.pow(2, Math.max((zoom ? zoom : 0) - 17, 0) / 2) * 16;
 
-    if (zoom != lastZoom) {
+    if (zoom != last_zoom) {
       for (const [key, objs] of currentMarkers) {
         for (const obj of objs) {
           if (obj != null) {
@@ -830,7 +831,7 @@ function initMap(): void {
         }
       }
     }
-    if (zoom < 15 || zoom != lastZoom) {
+    if (zoom < 15 || zoom != last_zoom) {
       while (rendering);
       rendering = true;
       for (const [key, objs] of currentMarkers) {
@@ -862,8 +863,7 @@ function initMap(): void {
       return;
     }
     if (lastBounds && lastBounds.contains(bounds.getSouthWest()) && lastBounds.contains(bounds.getNorthEast())) {
-      if (zoom != lastZoom) {
-        lastZoom = zoom;
+      if (zoom != last_zoom) {
         render(lastBounds, zoom);
       }
       finish_impl();
@@ -875,7 +875,6 @@ function initMap(): void {
     }
     const old_kiseis = new Map(kiseis.map(kisei => [kisei.id, kisei]));
     lastBounds = bounds;
-    lastZoom = zoom;
     const query = new URLSearchParams(params);
     (async function() {
       const responses: KiseiResponse[] | undefined = await fetch(`${location.origin}${location.pathname.split('@')[0]}api?${query}`).then(async (response) => {

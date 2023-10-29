@@ -1022,6 +1022,7 @@ addEventListener('change', e => {
   }
 
   if (check.closest('#kisei-types')) {
+    const parent = check.closest('#kisei-types');
     if (check instanceof HTMLInputElement) {
       if (check.name) {
         visible_kisei.set(check.name, check.checked);
@@ -1059,6 +1060,8 @@ addEventListener('change', e => {
 
       renderLast();
     }
+
+    (parent?.querySelector('span.summary') as HTMLSpanElement).innerText = [...visible_kisei.values()].filter(v => v).length + '/' + visible_kisei.size;
   }
 
   if (check.closest('#vehicle-types')) {
@@ -1098,6 +1101,8 @@ addEventListener('change', e => {
 
       renderLast();
     }
+
+    (parent?.querySelector('span.summary') as HTMLSpanElement).innerText = (document.getElementById('vehicle-preset') as HTMLSelectElement).selectedOptions.item(0)!.innerText;
   }
 
   if (check.closest('#day-and-time')) {
@@ -1107,8 +1112,8 @@ addEventListener('change', e => {
         visible_day[check.name.substring(4) as keyof typeof visible_day] = check.checked;
       }
       if (check.type == 'time') {
-        const start = Number((parent?.querySelector(`input[name="time_from"]`) as HTMLInputElement).value.replace(':', ''));
-        let end = Number((parent?.querySelector(`input[name="time_to"]`) as HTMLInputElement).value.replace(':', ''));
+        const start = Number((parent?.querySelector('input[name="time_from"]') as HTMLInputElement).value.replace(':', ''));
+        let end = Number((parent?.querySelector('input[name="time_to"]') as HTMLInputElement).value.replace(':', ''));
         if (end < start) {
           end += 2400;
         }
@@ -1121,21 +1126,11 @@ addEventListener('change', e => {
 
       renderLast();
     }
-    if (check instanceof HTMLSelectElement) {
-      if (check.value != '') {
-        for (let i = 0; i < 12; ++i) {
-          let digit = parseInt(check.value[i], 16);
-          for (let j = 0; j < 4; ++j) {
-            const e = parent?.querySelector(`input[name="${i * 4 + j}"]`);
-            (e as HTMLInputElement).checked = (digit & 8) != 0;
-            visible_vehicle[i * 4 + j] = (digit & 8) != 0;
-            digit <<= 1;
-          }
-        }
-      }
 
-      renderLast();
-    }
+    const names = new Map<string, string>([['weekday', '平日'], ['saturday', '土曜'], ['sunday', '日曜'], ['holiday', '休日']]);
+    (parent?.querySelector('span.summary') as HTMLSpanElement).innerText =
+      (Object.entries(visible_day).every(([_, v]) => v) ? '全日' : Object.entries(visible_day).filter(([_, v]) => v).map(([k, _]) => names.get(k as keyof typeof visible_day)).join('・')) + ' ' +
+      (visible_time_delta >= 2359 ? '終日' : (parent?.querySelector('input[name="time_from"]') as HTMLInputElement).value + (visible_time_delta == 0 ? '' : '〜' + (parent?.querySelector('input[name="time_to"]') as HTMLInputElement).value));
   }
 })
 

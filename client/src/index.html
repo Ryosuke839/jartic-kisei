@@ -58,9 +58,9 @@
                 <div id="option" style="width: 100%; box-sizing: border-box; padding: 1em; position: absolute; z-index: 101; background-color: white; display: none; max-height: 100%; overflow-y: auto;">
                     <div style="width: 100%; position: absolute; left: -1em; text-align: end; font-size: 2em;"><a href="javascript: void(0);" onclick="history.back();">×</a></div>
                     <h3>オプション</h3>
-                    <details>
-                        <summary style="margin: 1.33em 0; font-weight: bold;">表示する規制種別</summary>
-                        <ul id="kisei-types">
+                    <details id="kisei-types">
+                        <summary style="margin: 1.33em 0; font-weight: bold;">表示する規制種別 (<span class="summary">109/109</span>)</summary>
+                        <ul>
                             <li><details open>
                                 <summary><label><input type="checkbox" checked>全て</label></summary>
                                 <ul>
@@ -237,99 +237,95 @@
                             </details></li>
                         </ul>
                     </details>
-                    <details>
-                        <summary style="margin: 1.33em 0; font-weight: bold;">表示する対象車種</summary>
-                        <div id="vehicle-types">
-                            <select id="vehicle-preset">
-                                <option value="ffffffffffff" name="ffffffffffff">全て</option>
-                                <option value="f80000000000" name="f80000000000">普通乗用</option>
-                                <option value="e60000000000" name="e60000000000">中型乗用</option>
-                                <option value="e182c0000000" name="e182c0000000">特定中型乗用</option>
-                                <option value="e00ec0000000" name="e00ec0000000">大乗（大型バスを除く）</option>
-                                <option value="e00f80000000" name="e00f80000000">大型バス</option>
-                                <option value="c80000c00000" name="c80000c00000">普通貨物</option>
-                                <option value="c20000900000" name="c20000900000">中型貨物</option>
-                                <option value="c08200a80000" name="c08200a80000">特定中型貨物</option>
-                                <option value="c00a008c0000" name="c00a008c0000">大型貨物</option>
-                                <option value="c00000010000" name="c00000010000">小特</option>
-                                <option value="c00200088000" name="c00200088000">大特</option>
-                                <option value="e00000000c00" name="e00000000c00">大型二輪及び普通二輪（小型二輪を除く）</option>
-                                <option value="800000000200" name="800000000200">自転車</option>
-                                <option value="800000000900" name="800000000900">原付</option>
-                                <option value="e00000000c80" name="e00000000c80">小型二輪</option>
-                                <option value="800000000040" name="800000000040">軽車両（自転車を除く）</option>
-                                <option value="">カスタム</option>
-                            </select>
-                            <div style="display: flex;">
-                                <div>
-                                    <label><input type="checkbox" checked name="0">車両</label><br>
-                                    <label><input type="checkbox" checked name="1">自動車</label><br>
-                                    <label><input type="checkbox" checked name="2">乗用</label><br>
-                                    <label><input type="checkbox" checked name="3">普乗</label><br>
-                                    <label><input type="checkbox" checked name="4">普通</label><br>
-                                    <label><input type="checkbox" checked name="5">中乗</label><br>
-                                    <label><input type="checkbox" checked name="6">中型</label><br>
-                                    <label><input type="checkbox" checked name="7">特定中乗</label><br>
-                                    <label><input type="checkbox" checked name="8">特定中型</label><br>
-                                    <label><input type="checkbox" checked name="9">軽</label><br>
-                                    <label><input type="checkbox" checked name="10">準中乗</label><br>
-                                    <label><input type="checkbox" checked name="11">準中型</label>
-                                </div>
-                                <div>
-                                    <label><input type="checkbox" checked name="12">大型</label><br>
-                                    <label><input type="checkbox" checked name="13">大乗</label><br>
-                                    <label><input type="checkbox" checked name="14">大型等</label><br>
-                                    <label><input type="checkbox" checked name="15">大型バス</label><br>
-                                    <label><input type="checkbox" checked name="16">バス</label><br>
-                                    <label><input type="checkbox" checked name="17">マイクロ</label><br>
-                                    <label><input type="checkbox" checked name="18">路線バス</label><br>
-                                    <label><input type="checkbox" checked name="19">　</label><br>
-                                    <label><input type="checkbox" checked name="20">　</label><br>
-                                    <label><input type="checkbox" checked name="21">　</label><br>
-                                    <label><input type="checkbox" checked name="22">　</label><br>
-                                    <label><input type="checkbox" checked name="23">　</label>
-                                </div>
-                                <div>
-                                    <label><input type="checkbox" checked name="24">貨物</label><br>
-                                    <label><input type="checkbox" checked name="25">普貨</label><br>
-                                    <label><input type="checkbox" checked name="26">特定中貨物</label><br>
-                                    <label><input type="checkbox" checked name="27">中貨</label><br>
-                                    <label><input type="checkbox" checked name="28">大貨等</label><br>
-                                    <label><input type="checkbox" checked name="29">大貨</label><br>
-                                    <label><input type="checkbox" checked name="30">準中貨</label><br>
-                                    <label><input type="checkbox" checked name="31">小特</label><br>
-                                    <label><input type="checkbox" checked name="32">大特</label><br>
-                                    <label><input type="checkbox" checked name="33">　</label><br>
-                                    <label><input type="checkbox" checked name="34">　</label><br>
-                                    <label><input type="checkbox" checked name="35">　</label>
-                                </div>
-                                <div>
-                                    <label><input type="checkbox" checked name="36">二輪</label><br>
-                                    <label><input type="checkbox" checked name="37">自二輪</label><br>
-                                    <label><input type="checkbox" checked name="38">自転車</label><br>
-                                    <label><input type="checkbox" checked name="39">原付</label><br>
-                                    <label><input type="checkbox" checked name="40">小二輪</label><br>
-                                    <label><input type="checkbox" checked name="41">軽車両</label><br>
-                                    <label><input type="checkbox" checked name="42">タクシー</label><br>
-                                    <label><input type="checkbox" checked name="43">標章車</label><br>
-                                    <label><input type="checkbox" checked name="44">けん引</label><br>
-                                    <label><input type="checkbox" checked name="45">　</label><br>
-                                    <label><input type="checkbox" checked name="46">　</label><br>
-                                    <label><input type="checkbox" checked name="47">その他</label>
-                                </div>
+                    <details id="vehicle-types">
+                        <summary style="margin: 1.33em 0; font-weight: bold;">表示する対象車種 (<span class="summary">全て</span>)</summary>
+                        <select id="vehicle-preset">
+                            <option value="ffffffffffff" name="ffffffffffff">全て</option>
+                            <option value="f80000000000" name="f80000000000">普通乗用</option>
+                            <option value="e60000000000" name="e60000000000">中型乗用</option>
+                            <option value="e182c0000000" name="e182c0000000">特定中型乗用</option>
+                            <option value="e00ec0000000" name="e00ec0000000">大乗（大型バスを除く）</option>
+                            <option value="e00f80000000" name="e00f80000000">大型バス</option>
+                            <option value="c80000c00000" name="c80000c00000">普通貨物</option>
+                            <option value="c20000900000" name="c20000900000">中型貨物</option>
+                            <option value="c08200a80000" name="c08200a80000">特定中型貨物</option>
+                            <option value="c00a008c0000" name="c00a008c0000">大型貨物</option>
+                            <option value="c00000010000" name="c00000010000">小特</option>
+                            <option value="c00200088000" name="c00200088000">大特</option>
+                            <option value="e00000000c00" name="e00000000c00">大型二輪及び普通二輪（小型二輪を除く）</option>
+                            <option value="800000000200" name="800000000200">自転車</option>
+                            <option value="800000000900" name="800000000900">原付</option>
+                            <option value="e00000000c80" name="e00000000c80">小型二輪</option>
+                            <option value="800000000040" name="800000000040">軽車両（自転車を除く）</option>
+                            <option value="">カスタム</option>
+                        </select>
+                        <div style="display: flex;">
+                            <div>
+                                <label><input type="checkbox" checked name="0">車両</label><br>
+                                <label><input type="checkbox" checked name="1">自動車</label><br>
+                                <label><input type="checkbox" checked name="2">乗用</label><br>
+                                <label><input type="checkbox" checked name="3">普乗</label><br>
+                                <label><input type="checkbox" checked name="4">普通</label><br>
+                                <label><input type="checkbox" checked name="5">中乗</label><br>
+                                <label><input type="checkbox" checked name="6">中型</label><br>
+                                <label><input type="checkbox" checked name="7">特定中乗</label><br>
+                                <label><input type="checkbox" checked name="8">特定中型</label><br>
+                                <label><input type="checkbox" checked name="9">軽</label><br>
+                                <label><input type="checkbox" checked name="10">準中乗</label><br>
+                                <label><input type="checkbox" checked name="11">準中型</label>
+                            </div>
+                            <div>
+                                <label><input type="checkbox" checked name="12">大型</label><br>
+                                <label><input type="checkbox" checked name="13">大乗</label><br>
+                                <label><input type="checkbox" checked name="14">大型等</label><br>
+                                <label><input type="checkbox" checked name="15">大型バス</label><br>
+                                <label><input type="checkbox" checked name="16">バス</label><br>
+                                <label><input type="checkbox" checked name="17">マイクロ</label><br>
+                                <label><input type="checkbox" checked name="18">路線バス</label><br>
+                                <label><input type="checkbox" checked name="19">　</label><br>
+                                <label><input type="checkbox" checked name="20">　</label><br>
+                                <label><input type="checkbox" checked name="21">　</label><br>
+                                <label><input type="checkbox" checked name="22">　</label><br>
+                                <label><input type="checkbox" checked name="23">　</label>
+                            </div>
+                            <div>
+                                <label><input type="checkbox" checked name="24">貨物</label><br>
+                                <label><input type="checkbox" checked name="25">普貨</label><br>
+                                <label><input type="checkbox" checked name="26">特定中貨物</label><br>
+                                <label><input type="checkbox" checked name="27">中貨</label><br>
+                                <label><input type="checkbox" checked name="28">大貨等</label><br>
+                                <label><input type="checkbox" checked name="29">大貨</label><br>
+                                <label><input type="checkbox" checked name="30">準中貨</label><br>
+                                <label><input type="checkbox" checked name="31">小特</label><br>
+                                <label><input type="checkbox" checked name="32">大特</label><br>
+                                <label><input type="checkbox" checked name="33">　</label><br>
+                                <label><input type="checkbox" checked name="34">　</label><br>
+                                <label><input type="checkbox" checked name="35">　</label>
+                            </div>
+                            <div>
+                                <label><input type="checkbox" checked name="36">二輪</label><br>
+                                <label><input type="checkbox" checked name="37">自二輪</label><br>
+                                <label><input type="checkbox" checked name="38">自転車</label><br>
+                                <label><input type="checkbox" checked name="39">原付</label><br>
+                                <label><input type="checkbox" checked name="40">小二輪</label><br>
+                                <label><input type="checkbox" checked name="41">軽車両</label><br>
+                                <label><input type="checkbox" checked name="42">タクシー</label><br>
+                                <label><input type="checkbox" checked name="43">標章車</label><br>
+                                <label><input type="checkbox" checked name="44">けん引</label><br>
+                                <label><input type="checkbox" checked name="45">　</label><br>
+                                <label><input type="checkbox" checked name="46">　</label><br>
+                                <label><input type="checkbox" checked name="47">その他</label>
                             </div>
                         </div>
                     </details>
-                    <details>
-                        <summary style="margin: 1.33em 0; font-weight: bold;">表示する規制時間</summary>
-                        <div id="day-and-time">
-                            <label><input type="checkbox" checked name="day_weekday">平日</label>
-                            <label><input type="checkbox" checked name="day_saturday">土曜</label>
-                            <label><input type="checkbox" checked name="day_sunday">日曜</label>
-                            <label><input type="checkbox" checked name="day_holiday">休日</label>
-                            <br>
-                            <input type="time" name="time_from" value="00:00"> ～ <input type="time" name="time_to" value="23:59">
-                        </div>
+                    <details id="day-and-time">
+                        <summary style="margin: 1.33em 0; font-weight: bold;">表示する規制時間 (<span class="summary">全日 終日</span>)</summary>
+                        <label><input type="checkbox" checked name="day_weekday">平日</label>
+                        <label><input type="checkbox" checked name="day_saturday">土曜</label>
+                        <label><input type="checkbox" checked name="day_sunday">日曜</label>
+                        <label><input type="checkbox" checked name="day_holiday">休日</label>
+                        <br>
+                        <input type="time" name="time_from" value="00:00"> ～ <input type="time" name="time_to" value="23:59">
                     </details>
                 </div>
                 <div id="about" style="width: 100%; box-sizing: border-box; padding: 1em; position: absolute; z-index: 101; background-color: white; display: none; max-height: 100%; overflow-y: auto;">

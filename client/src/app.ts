@@ -732,6 +732,14 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: stri
           }
           last = r.offsets[i];
         }
+        if (lastMarkers) {
+          for (let i = markers.length; i < lastMarkers.length; ++i) {
+            const marker = lastMarkers[i];
+            if (marker != null) {
+              marker.setMap(null);
+            }
+          }
+        }
       }
       currentMarkers.set(key, markers);
     }

@@ -4,6 +4,7 @@ const names = new Map([['1', '歩行者用道路'], ['2', '自転車用道路'],
 const columns = ["都道府県コード", "警察署コード", "関連警察署コード1", "関連警察署コード2", "関連警察署コード3", "関連警察署コード4", "関連警察署コード5", "関連警察署コード6", "関連警察署コード7", "関連警察署コード8", "共通規制種別コード", "点・線・面コード", "県別規制種別名称", "規制決定年月日", "都道府県別ユニークキー", "規制番号", "番号", null, "規制場所始点", "規制場所終点", "住所", "交差点名称", "区間または区域", "場所・区間1", "場所・区間2", "場所・区間3", "経由場所・区間", "1-路線1", "1-路線1(コード)", "1-路線2", "1-路線2(コード)", "1-路線3", "1-路線4", "バイパス名", "進入方向", "禁止する方向1", "禁止する方向2", "指定する方向1", "指定する方向2", "指定する方向3", "指定する方向4", "指定・禁止方向の別コード", "方向1_1", "方向1", "一時解除始", "一時解除終", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "関連規制1", "関連規制2", "方向・規制内容等", "既規制等", "規制台帳インデックス", "規制場所始点2", "規制場所始点3", "規制場所終点2", "規制場所終点3", "進路変更禁止区間・地点1", "距離･延長", "距離・延長2", "面積", "速度1", "速度2", "速度3", "速度4", "最低速度", "片側・両側コード", "信号の有無コード", "車両通行帯数", "車両通行帯　指定番号", "中央線の指定", "歩道数", "駐車可台数", "通行方法", "車両の通行区分を指定", "進行方向別通行区分", "道路状況", "側の指定", "側指定コード", "横断歩道設置本数", "停止線本数", "通行帯の指定", "車線数", "対象通行帯1", "対象通行帯2", "対象通行帯3", "対象通行帯4", "信号機種別", "交差点・単路の別", "通行帯内容", "指定通行帯", "専用通行帯", "鉄道路線名", "踏切名称", "踏切種別コード", "車道幅員", "停止禁止幅員", "交差点ID", "右左折の別コード", "右左折方向1コード", "右左折方向2コード", "右左折方向3コード", "右左折方法1コード", "右左折方法2コード", "右左折方法3コード", "左折できる方向コード", "指定区分", "指定方法", "通行区分", "通行方法2", "通行方法3", "駐車方法コード", "停車方法コード", "方位コード", "方法（但し書き)", "歩道通行部分コード", "パーキングメーター基数", "区別（高齢運転者等標章自動車）コード", "交差点形状名コード", "指定区間＿通行帯位置", "指定時間", "種別（横断歩道）コード", "信号機設置管理者（委任）", "制限重量", "設置する通行帯", "停止位置コード", "停止禁止部分コード", "停止禁止面積＿横", "停止禁止面積＿縦", "摘要 禁止する方向", "摘要 指定部分コード", "歩道状況　歩道切り下げコード", "路側帯の種類コード", "更新理由", "区間（備考）1", "備考"];
 const onewayDir = new Map([['2', true], ['3', false], ['4', true], ['6', false], ['7', false], ['8', false], ['9', false], ['10', true], ['11', true], ['12', true], ['13', true], ['14', true], ['15', false], ['16', true], ['20', true], ['21', false], ['22', true], ['23', true], ['24', false], ['25', false], ['26', false], ['27', false], ['28', false], ['29', false], ['30', false], ['32', true], ['33', false], ['34', true], ['35', false], ['36', false], ['37', false], ['38', false], ['39', true], ['40', false], ['41', false], ['42', true], ['44', false], ['45', false], ['46', true], ['47', true]]);
 const visible_kisei = new Map(Array.from(names.keys()).map(k => [k, true]));
+let transparent_kisei = true;
 const visible_vehicle = new Array(48).fill(true);
 const visible_day = {weekday: true, saturday: true, sunday: true, holiday: true};
 let visible_time_center = 1200;
@@ -331,6 +332,10 @@ interface KiseiResponse {
   offsets: number[];
 }
 
+interface Opacity {
+  opacity: number;
+}
+
 let currentWindow: google.maps.InfoWindow | null = null;
 let currentMarkers = new Map<string, Array<google.maps.Marker | null>>();
 let currentPolylines = new Map<string, Array<google.maps.Polyline>>();
@@ -366,7 +371,8 @@ function updateUrl(center?: google.maps.LatLng, zoom?: number, suffix?: string) 
   }
 }
 
-let currentKeys: string[] = [];
+let visibleKeys = new Map<string, number>();
+let currentKeys: [string, number][] = [];
 function showInfo(key: string | undefined, e: google.maps.MapMouseEvent) {
   if (currentWindow != null) {
     currentWindow.close();
@@ -380,7 +386,6 @@ function showInfo(key: string | undefined, e: google.maps.MapMouseEvent) {
     return;
   }
   const ks = [key];
-  const contents = new Map<string, string>();
   for (const [k, objs] of currentPolylines) {
     for (const obj of objs) {
       if (k != key && obj != null && google.maps.geometry.poly.isLocationOnEdge(e.latLng, obj, 10 * Math.pow(2, -lastZoom))) {
@@ -394,21 +399,21 @@ function showInfo(key: string | undefined, e: google.maps.MapMouseEvent) {
       ks.push(k);
     }
   }
-  currentKeys = ks;
+  currentKeys = ks.map(k => [k, visibleKeys.get(k) || 0] as [string, number]).sort((a, b) => b[1] - a[1]);
   const keys = new Map(kiseis.map(r => [r.id, r]));
   const element = document.createElement('div');
   let content = '';
-  for (const k of ks) {
+  for (const [k, o] of currentKeys) {
     const kisei = keys.get(k);
     if (kisei != undefined) {
       const url = getIcon(kisei.row, 0)?.url;
       content += '<div style="' + (url ? `background-image: url(${url}); background-repeat: no-repeat; background-size: 4.5em; ` : '') + 'padding-inline-start: 5em; min-height: 4.5em; margin-bottom: 0.5em;">';
       if (currentPolylines.has(kisei.id)) {
-        content += `<span style="width: 5em; display: inline-block; margin: .5em 0 .5em 0; border: 1.5px solid ${getColor(kisei.row[10])};"></span><br>`;
+        content += `<span style="width: 5em; display: inline-block; margin: .5em 0 .5em 0; border: 1.5px solid ${getColor(kisei.row[10])}; opacity: ${o};"></span><br>`;
       } else if (currentPolygons.has(kisei.id)) {
-        content += `<span style="width: 5em; height: 1em; display: inline-block; border: 2px solid ${getColor(kisei.row[10])}; background-color: ${getColor(kisei.row[10])}80;"></span><br>`;
+        content += `<span style="width: 5em; height: 1em; display: inline-block; border: 2px solid ${getColor(kisei.row[10])}; background-color: ${getColor(kisei.row[10])}80; opacity: ${o};"></span><br>`;
       } else {
-        content += `<span style="display: inline-block; margin: .5em; border: 1.5px solid;"></span><br>`;
+        content += `<span style="display: inline-block; margin: .5em; border: 1.5px solid; opacity: ${o};"></span><br>`;
       }
       content += names.get(kisei.row[10]) + '<br>' + rowToSubjects(kisei.row).join('<br>');
       content += '</div>';
@@ -440,17 +445,17 @@ function showDetail() {
   }
   const keys = new Map(kiseis.map(r => [r.id, r]));
   let content = '';
-  for (const k of currentKeys) {
+  for (const [k, o] of currentKeys) {
     const kisei = keys.get(k);
     if (kisei != undefined) {
       const url = getIcon(kisei.row, 0)?.url;
-      content += '<div style="' + (url ? `background-image: url(${url}); background-repeat: no-repeat; background-size: 4.5em; ` : '') + 'padding-inline-start: 5em; min-height: 4.5em;' + (k != currentKeys[0] ? ' margin-top: 0.5em;' : '') + '">';
+      content += '<div style="' + (url ? `background-image: url(${url}); background-repeat: no-repeat; background-size: 4.5em; ` : '') + 'padding-inline-start: 5em; min-height: 4.5em;' + (k != currentKeys[0][0] ? ' margin-top: 0.5em;' : '') + '">';
       if (currentPolylines.has(kisei.id)) {
-        content += `<span style="width: 5em; display: inline-block; margin: .5em 0 .5em 0; border: 1.5px solid ${getColor(kisei.row[10])};"></span><br>`;
+        content += `<span style="width: 5em; display: inline-block; margin: .5em 0 .5em 0; border: 1.5px solid ${getColor(kisei.row[10])}; opacity: ${o};"></span><br>`;
       } else if (currentPolygons.has(kisei.id)) {
-        content += `<span style="width: 5em; height: 1em; display: inline-block; border: 2px solid ${getColor(kisei.row[10])}; background-color: ${getColor(kisei.row[10])}80;"></span><br>`;
+        content += `<span style="width: 5em; height: 1em; display: inline-block; border: 2px solid ${getColor(kisei.row[10])}; background-color: ${getColor(kisei.row[10])}80; opacity: ${o};"></span><br>`;
       } else {
-        content += `<span style="display: inline-block; margin: .5em; border: 1.5px solid;"></span><br>`;
+        content += `<span style="display: inline-block; margin: .5em; border: 1.5px solid; opacity: ${o};"></span><br>`;
       }
       content += names.get(kisei.row[10]) + '<br>' + rowToSubjects(kisei.row).join('<br>');
       content += '<br>' + kisei.row.map((v, i) => (columns[i] != null && v != '') ? `[${i} ${columns[i]}] ${v}<br>` : '').join('');
@@ -477,7 +482,7 @@ function showDetail() {
   detail_content.innerHTML = content;
   const bounds = new google.maps.LatLngBounds();
   for (const [key, objs] of currentMarkers) {
-    if (currentKeys.includes(key)) {
+    if (currentKeys.some(([k, _]) => k == key)) {
       for (const obj of objs) {
         if (obj != null) {
           const latlng = obj.getPosition();
@@ -489,7 +494,7 @@ function showDetail() {
     }
   }
   for (const [key, objs] of currentPolylines) {
-    if (currentKeys.includes(key)) {
+    if (currentKeys.some(([k, _]) => k == key)) {
       for (const obj of objs) {
         if (obj != null) {
           for (const latlng of obj.getPath().getArray()) {
@@ -500,7 +505,7 @@ function showDetail() {
     }
   }
   for (const [key, obj] of currentPolygons) {
-    if (currentKeys.includes(key)) {
+    if (currentKeys.some(([k, _]) => k == key)) {
       for (const latlng of obj.getPath().getArray()) {
         bounds.extend(latlng);
       }
@@ -515,132 +520,141 @@ function getDistance(coord1: {lat: number, lng: number}, coord2: {lat: number, l
 
 let rendering = false;
 let first = true;
-function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: string[] | null = null): void {
+function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [string, number][] | null = null): void {
   while (rendering);
   rendering = true;
   const iconSize = Math.pow(2, Math.max((zoom ? zoom : 0) - 17, 0) / 2) * 16;
-  const keys = new Map(kiseis.filter(r => !filterKeys || filterKeys.includes(r.id)).filter(r => visible_kisei.get(r.row[10])).filter(r => {
-    const match = (row_slice: string[], negate: boolean): [boolean, boolean] => {
-      let any = false;
-      return [(() => {
-        if (negate) {
-          let i;
-          for (i = 0; i < 48; ++i) {
-            if (!visible_vehicle[i]) {
-              break;
-            }
-          }
-          if (i == 48) {
-            return true;
-          }
-        }
-        for (let i = 0; i < 4; ++i) {
-          if (row_slice[5 + i] != '') {
-            any = true;
-            let bits = Number(row_slice[5 + i]);
-            for (let j = 0; j < 12 && bits >= 1; ++j) {
-              if (bits % 10 == 1 && visible_vehicle[i * 12 + j]) {
-                return true;
+  const keys = new Map<string, KiseiResponse & Opacity>(filterKeys ?
+    kiseis.map(r => [r.id, {...r, opacity: filterKeys.find(([k, _]) => k == r.id)?.[1] || 0}] as [string, KiseiResponse & Opacity]).filter(([_, r]) => r.opacity > 0) :
+    kiseis.filter(r => visible_kisei.get(r.row[10])).map((r): [string, KiseiResponse & Opacity] => [r.id, {...r, opacity: ((r: KiseiResponse) => {
+      const match = (row_slice: string[], negate: boolean): [boolean, boolean] => {
+        let any = false;
+        return [(() => {
+          if (negate) {
+            let i;
+            for (i = 0; i < 48; ++i) {
+              if (!visible_vehicle[i]) {
+                break;
               }
-              bits = Math.floor(bits / 10);
+            }
+            if (i == 48) {
+              return true;
             }
           }
-        }
-        return !any;
-      })() && (() => {
-        if (row_slice[4] != '') {
-          any = true;
-          if (negate) {
-            switch (row_slice[4]) {
-              case '1':
-                return !(visible_day.weekday || visible_day.holiday);
-              case '2':
-                return !visible_day.weekday;
-              case '3':
-                return !(visible_day.weekday || visible_day.saturday);
-            }
-          } else {
-            switch (row_slice[4]) {
-              case '1':
-                return visible_day.saturday || visible_day.sunday;
-              case '2':
-                return visible_day.saturday || visible_day.sunday || visible_day.holiday;
-              case '3':
-                return visible_day.sunday || visible_day.holiday;
+          for (let i = 0; i < 4; ++i) {
+            if (row_slice[5 + i] != '') {
+              any = true;
+              let bits = Number(row_slice[5 + i]);
+              for (let j = 0; j < 12 && bits >= 1; ++j) {
+                if (bits % 10 == 1 && visible_vehicle[i * 12 + j]) {
+                  return true;
+                }
+                bits = Math.floor(bits / 10);
+              }
             }
           }
-          return !negate;
+          return !any;
+        })() && (() => {
+          if (row_slice[4] != '') {
+            any = true;
+            if (negate) {
+              switch (row_slice[4]) {
+                case '1':
+                  return !(visible_day.weekday || visible_day.holiday);
+                case '2':
+                  return !visible_day.weekday;
+                case '3':
+                  return !(visible_day.weekday || visible_day.saturday);
+              }
+            } else {
+              switch (row_slice[4]) {
+                case '1':
+                  return visible_day.saturday || visible_day.sunday;
+                case '2':
+                  return visible_day.saturday || visible_day.sunday || visible_day.holiday;
+                case '3':
+                  return visible_day.sunday || visible_day.holiday;
+              }
+            }
+            return !negate;
+          }
+          return true;
+        })() && (() => {
+          if (row_slice[2] != '' && row_slice[3]) {
+            any = true;
+            let start = Number(row_slice[2]);
+            let end = Number(row_slice[3]) - 1;
+            if (end < start) {
+              end += 2400;
+            }
+            let center = (start + end) / 2;
+            if (center >= 2400) {
+              center -= 2400;
+            }
+            let delta = end - start;
+            let dist = Math.abs(center - visible_time_center);
+            if (dist >= 1200) {
+              dist = 2400 - dist;
+            }
+            if (negate) {
+              return dist <= (delta - visible_time_delta) / 2;
+            } else {
+              return dist <= (delta + visible_time_delta) / 2;
+            }
+          }
+          return true;
+        })() && (!negate || any), any];
+      };
+      let any = false;
+      for (let i = 91; i < 136; i += 9) {
+        const [res, any_local] = match(r.row.slice(i, i + 9), true);
+        if (res && any_local) {
+          return false;
         }
-        return true;
-      })() && (() => {
-        if (row_slice[2] != '' && row_slice[3]) {
-          any = true;
-          let start = Number(row_slice[2]);
-          let end = Number(row_slice[3]) - 1;
-          if (end < start) {
-            end += 2400;
-          }
-          let center = (start + end) / 2;
-          if (center >= 2400) {
-            center -= 2400;
-          }
-          let delta = end - start;
-          let dist = Math.abs(center - visible_time_center);
-          if (dist >= 1200) {
-            dist = 2400 - dist;
-          }
-          if (negate) {
-            return dist <= (delta - visible_time_delta) / 2;
-          } else {
-            return dist <= (delta + visible_time_delta) / 2;
+        any = any || any_local;
+      }
+      for (let i = 46; i < 91; i += 9) {
+        const [res, any_local] = match(r.row.slice(i, i + 9), false);
+        if (res && any_local) {
+          return true;
+        }
+        any = any || any_local;
+      }
+      const include = new Map<string, string>([
+        ['6', '000000000400'],
+        ['8', '000000000001'],
+        ['14', '000000000001'],
+        ['25', '000000000008'],
+        ['55', '000000000100'],
+        ['56', '000000000100'],
+        ['81', '000000000200'],
+        ['82', '000000000200'],
+        ['83', '000000000200'],
+        ['84', '000000000200'],
+      ]);
+      if (include.has(r.row[10])) {
+        any = true;
+        for (let i = 0; i < 12; ++i) {
+          let digit = parseInt(include.get(r.row[10])!![i], 16);
+          for (let j = 0; j < 4; ++j) {
+            if ((digit & 8) != 0 && visible_vehicle[i * 4 + j]) {
+              return true;
+            }
+            digit <<= 1;
           }
         }
-        return true;
-      })() && (!negate || any), any];
-    };
-    let any = false;
-    for (let i = 91; i < 136; i += 9) {
-      const [res, any_local] = match(r.row.slice(i, i + 9), true);
-      if (res && any_local) {
-        return false;
       }
-      any = any || any_local;
-    }
-    for (let i = 46; i < 91; i += 9) {
-      const [res, any_local] = match(r.row.slice(i, i + 9), false);
-      if (res && any_local) {
-        return true;
-      }
-      any = any || any_local;
-    }
-    const include = new Map<string, string>([
-      ['6', '000000000400'],
-      ['8', '000000000001'],
-      ['14', '000000000001'],
-      ['25', '000000000008'],
-      ['55', '000000000100'],
-      ['56', '000000000100'],
-      ['81', '000000000200'],
-      ['82', '000000000200'],
-      ['83', '000000000200'],
-      ['84', '000000000200'],
-    ]);
-    if (include.has(r.row[10])) {
-      any = true;
-      for (let i = 0; i < 12; ++i) {
-        let digit = parseInt(include.get(r.row[10])!![i], 16);
-        for (let j = 0; j < 4; ++j) {
-          if ((digit & 8) != 0 && visible_vehicle[i * 4 + j]) {
-            return true;
-          }
-          digit <<= 1;
-        }
-      }
-    }
-    return !any && visible_vehicle[0];
-  }).map(r => [r.id, r]));
+      return !any && visible_vehicle[0];
+    })(r) ? 1.0 : 0.5}]).filter(r => transparent_kisei || r[1].opacity == 1.0));
   for (const [key, objs] of currentMarkers) {
-    if (!keys.has(key)) {
+    const r = keys.get(key);
+    if (r) {
+      for (const obj of objs) {
+        if (obj != null) {
+          obj.setOpacity(keys.get(key)!!.opacity);
+        }
+      }
+    } else {
       for (const obj of objs) {
         if (obj != null) {
           obj.setMap(null);
@@ -651,7 +665,15 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: stri
   }
   for (const [key, objs] of currentPolylines) {
     const r = keys.get(key);
-    if (!r || zoom < 17 && (r.row[10] == '12' || r.row[10] == '13' || r.row[10] == '63')) {
+    if (r) {
+      for (const obj of objs) {
+        if (obj != null) {
+          obj.setOptions({
+            strokeOpacity: 0.5 * r.opacity,
+          });
+        }
+      }
+    } else {
       for (const obj of objs) {
         if (obj != null) {
           obj.setMap(null);
@@ -661,7 +683,13 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: stri
     }
   }
   for (const [key, obj] of currentPolygons) {
-    if (!keys.has(key)) {
+    const r = keys.get(key);
+    if (r) {
+      obj.setOptions({
+        fillOpacity: 0.25 * r.opacity,
+        strokeOpacity: 0.5 * r.opacity,
+      });
+    } else {
       obj.setMap(null);
       currentPolygons.delete(key);
     }
@@ -676,6 +704,7 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: stri
           position: r.coords[0],
           icon: icon,
           map: map,
+          opacity: r.opacity,
         });
         currentMarkers.set(key, [marker]);
         marker.addListener('click', (e: google.maps.MapMouseEvent) => showInfo(key, e));
@@ -692,7 +721,7 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: stri
                 clickable: true,
                 path: path,
                 strokeColor: color,
-                strokeOpacity: 0.5,
+                strokeOpacity: 0.5 * r.opacity,
                 strokeWeight: 3,
                 icons: [{
                   icon: {
@@ -711,7 +740,7 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: stri
                 clickable: true,
                 path: [r.coords[0], r.coords[i]],
                 strokeColor: color,
-                strokeOpacity: 0.5,
+                strokeOpacity: 0.5 * r.opacity,
                 strokeWeight: 3,
                 icons: [{
                   icon: {
@@ -734,9 +763,9 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: stri
             clickable: true,
             paths: r.coords.slice(undefined, -1),
             fillColor: color,
-            fillOpacity: 0.25,
+            fillOpacity: 0.25 * r.opacity,
             strokeColor: color,
-            strokeOpacity: 1.0,
+            strokeOpacity: 0.5 * r.opacity,
             strokeWeight: 2,
             map: map,
           });
@@ -749,7 +778,7 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: stri
             clickable: true,
             path: r.coords,
             strokeColor: color,
-            strokeOpacity: 0.5,
+            strokeOpacity: 0.5 * r.opacity,
             strokeWeight: 3,
             icons: r.row[10] == '11' && onewayDir.has(r.row[0]) || r.row[10] == '94' || r.row[10] == '106' ? [{
               icon: {
@@ -781,6 +810,7 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: stri
                   position,
                   icon: icon,
                   map: map,
+                  opacity: r.opacity,
                 });
                 marker.addListener('click', (e: google.maps.MapMouseEvent) => showInfo(key, e));
                 return marker;
@@ -811,6 +841,7 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: stri
       currentMarkers.set(key, markers);
     }
   }
+  visibleKeys = new Map(Array.from(keys.entries()).map(([k, r]) => [k, r.opacity]));
   rendering = false;
   if (first) {
     if (lastSuffix != '') {
@@ -1062,6 +1093,12 @@ addEventListener('change', e => {
     }
 
     (parent?.querySelector('span.summary') as HTMLSpanElement).innerText = [...visible_kisei.values()].filter(v => v).length + '/' + visible_kisei.size;
+  }
+
+  if (check instanceof HTMLInputElement && check.name == 'display' && check.checked) {
+    transparent_kisei = check.value == 'transparent';
+
+    renderLast();
   }
 
   if (check.closest('#vehicle-types')) {

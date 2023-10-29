@@ -320,6 +320,17 @@
                             </div>
                         </div>
                     </details>
+                    <details>
+                        <summary style="margin: 1.33em 0; font-weight: bold;">表示する規制時間</summary>
+                        <div id="day-and-time">
+                            <label><input type="checkbox" checked name="day_weekday">平日</label>
+                            <label><input type="checkbox" checked name="day_saturday">土曜</label>
+                            <label><input type="checkbox" checked name="day_sunday">日曜</label>
+                            <label><input type="checkbox" checked name="day_holiday">休日</label>
+                            <br>
+                            <input type="time" name="time_from" value="00:00"> ～ <input type="time" name="time_to" value="23:59">
+                        </div>
+                    </details>
                 </div>
                 <div id="about" style="width: 100%; box-sizing: border-box; padding: 1em; position: absolute; z-index: 101; background-color: white; display: none; max-height: 100%; overflow-y: auto;">
                     <div style="width: 100%; position: absolute; left: -1em; text-align: end; font-size: 2em;"><a href="javascript: void(0);" onclick="history.back();">×</a></div>

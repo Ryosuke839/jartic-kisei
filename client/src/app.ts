@@ -5,6 +5,9 @@ const columns = ["都道府県コード", "警察署コード", "関連警察署
 const onewayDir = new Map([['2', true], ['3', false], ['4', true], ['6', false], ['7', false], ['8', false], ['9', false], ['10', true], ['11', true], ['12', true], ['13', true], ['14', true], ['15', false], ['16', true], ['20', true], ['21', false], ['22', true], ['23', true], ['24', false], ['25', false], ['26', false], ['27', false], ['28', false], ['29', false], ['30', false], ['32', true], ['33', false], ['34', true], ['35', false], ['36', false], ['37', false], ['38', false], ['39', true], ['40', false], ['41', false], ['42', true], ['44', false], ['45', false], ['46', true], ['47', true]]);
 const visible_kisei = new Map(Array.from(names.keys()).map(k => [k, true]));
 const visible_vehicle = new Array(48).fill(true);
+const visible_day = {weekday: true, saturday: true, sunday: true, holiday: true};
+let visible_time_center = 1200;
+let visible_time_delta = 1200;
 function getIcon(row: string[], iconSize: number): google.maps.Icon | undefined {
   const signs = new Set(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '19', '21', '22', '23', '24', '27', '28', '29', '30', '31', '32', '33', '34', '35', '46', '47', '48', '49', '50', '51', '53', '54', '55', '56', '57', '58', '59', '60', '61', '62', '63', '65', '66', '67', '70', '71', '72', '73', '74', '75', '76', '77', '78', '79', '80', '81', '82', '83', '84', '85', '86', '87', '88', '90', '92', '93', '94', '97', '98', '99', '100', '103', '106', '108']);
   const ident = (row: string[]) => row[10];
@@ -273,7 +276,7 @@ function rowToSubjects(row: string[]): string[] {
       subject += `${Number(row[i + 1].padStart(4, '0').substring(2, 4))}日`;
     }
     if (row[i + 4]) {
-      const days = new Map([['1', '土曜、日曜'], ['2', '土曜・日曜・休日'], ['3', '日曜・休日'], ['3', '日曜・祭日'], ['4', '競輪開催日'], ['5', '競馬開催日'], ['6', '場内馬券発売日'], ['7', '競艇開催日'], ['8', '工事実施日']]);
+      const days = new Map([['1', '土曜、日曜'], ['2', '土曜・日曜・休日'], ['3', '日曜・休日'], ['4', '競輪開催日'], ['5', '競馬開催日'], ['6', '場内馬券発売日'], ['7', '競艇開催日'], ['8', '工事実施日']]);
       subject += ` ${days.get(row[i + 4]) || row[i + 4]}`;
     }
     if (row[i + 2] != '' && row[i + 3]) {
@@ -517,7 +520,99 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: stri
   rendering = true;
   const iconSize = Math.pow(2, Math.max((zoom ? zoom : 0) - 17, 0) / 2) * 16;
   const keys = new Map(kiseis.filter(r => !filterKeys || filterKeys.includes(r.id)).filter(r => visible_kisei.get(r.row[10])).filter(r => {
+    const match = (row_slice: string[], negate: boolean): [boolean, boolean] => {
+      let any = false;
+      return [(() => {
+        if (negate) {
+          let i;
+          for (i = 0; i < 48; ++i) {
+            if (!visible_vehicle[i]) {
+              break;
+            }
+          }
+          if (i == 48) {
+            return true;
+          }
+        }
+        for (let i = 0; i < 4; ++i) {
+          if (row_slice[5 + i] != '') {
+            any = true;
+            let bits = Number(row_slice[5 + i]);
+            for (let j = 0; j < 12 && bits >= 1; ++j) {
+              if (bits % 10 == 1 && visible_vehicle[i * 12 + j]) {
+                return true;
+              }
+              bits = Math.floor(bits / 10);
+            }
+          }
+        }
+        return !any;
+      })() && (() => {
+        if (row_slice[4] != '') {
+          any = true;
+          if (negate) {
+            switch (row_slice[4]) {
+              case '1':
+                return !(visible_day.weekday || visible_day.holiday);
+              case '2':
+                return !visible_day.weekday;
+              case '3':
+                return !(visible_day.weekday || visible_day.saturday);
+            }
+          } else {
+            switch (row_slice[4]) {
+              case '1':
+                return visible_day.saturday || visible_day.sunday;
+              case '2':
+                return visible_day.saturday || visible_day.sunday || visible_day.holiday;
+              case '3':
+                return visible_day.sunday || visible_day.holiday;
+            }
+          }
+          return !negate;
+        }
+        return true;
+      })() && (() => {
+        if (row_slice[2] != '' && row_slice[3]) {
+          any = true;
+          let start = Number(row_slice[2]);
+          let end = Number(row_slice[3]) - 1;
+          if (end < start) {
+            end += 2400;
+          }
+          let center = (start + end) / 2;
+          if (center >= 2400) {
+            center -= 2400;
+          }
+          let delta = end - start;
+          let dist = Math.abs(center - visible_time_center);
+          if (dist >= 1200) {
+            dist = 2400 - dist;
+          }
+          if (negate) {
+            return dist <= (delta - visible_time_delta) / 2;
+          } else {
+            return dist <= (delta + visible_time_delta) / 2;
+          }
+        }
+        return true;
+      })() && (!negate || any), any];
+    };
     let any = false;
+    for (let i = 91; i < 136; i += 9) {
+      const [res, any_local] = match(r.row.slice(i, i + 9), true);
+      if (res && any_local) {
+        return false;
+      }
+      any = any || any_local;
+    }
+    for (let i = 46; i < 91; i += 9) {
+      const [res, any_local] = match(r.row.slice(i, i + 9), false);
+      if (res && any_local) {
+        return true;
+      }
+      any = any || any_local;
+    }
     const include = new Map<string, string>([
       ['6', '000000000400'],
       ['8', '000000000001'],
@@ -530,20 +625,6 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: stri
       ['83', '000000000200'],
       ['84', '000000000200'],
     ]);
-    for (let i = 91; i < 136; i += 9) {
-      for (let j = 0; j < 4; ++j) {
-        if (r.row[i + 5 + j] != '') {
-          any = true;
-          let bits = Number(r.row[i + 5 + j]);
-          for (let k = 0; k < 12 && bits >= 1; ++k) {
-            if (bits % 10 == 1 && visible_vehicle[j * 12 + k]) {
-              return false;
-            }
-            bits = Math.floor(bits / 10);
-          }
-        }
-      }
-    }
     if (include.has(r.row[10])) {
       any = true;
       for (let i = 0; i < 12; ++i) {
@@ -553,20 +634,6 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: stri
             return true;
           }
           digit <<= 1;
-        }
-      }
-    }
-    for (let i = 46; i < 91; i += 9) {
-      for (let j = 0; j < 4; ++j) {
-        if (r.row[i + 5 + j] != '') {
-          any = true;
-          let bits = Number(r.row[i + 5 + j]);
-          for (let k = 0; k < 12 && bits >= 1; ++k) {
-            if (bits % 10 == 1 && visible_vehicle[j * 12 + k]) {
-              return true;
-            }
-            bits = Math.floor(bits / 10);
-          }
         }
       }
     }
@@ -1009,11 +1076,48 @@ addEventListener('change', e => {
         }
         types += sum.toString(16);
       }
-      console.log(types);
 
       const select = document.getElementById('vehicle-preset') as HTMLSelectElement;
       const option = select.options.namedItem(types);
       select.options.selectedIndex = option?.index ?? select.options.length - 1;
+
+      renderLast();
+    }
+    if (check instanceof HTMLSelectElement) {
+      if (check.value != '') {
+        for (let i = 0; i < 12; ++i) {
+          let digit = parseInt(check.value[i], 16);
+          for (let j = 0; j < 4; ++j) {
+            const e = parent?.querySelector(`input[name="${i * 4 + j}"]`);
+            (e as HTMLInputElement).checked = (digit & 8) != 0;
+            visible_vehicle[i * 4 + j] = (digit & 8) != 0;
+            digit <<= 1;
+          }
+        }
+      }
+
+      renderLast();
+    }
+  }
+
+  if (check.closest('#day-and-time')) {
+    const parent = check.closest('#day-and-time');
+    if (check instanceof HTMLInputElement) {
+      if (check.type == 'checkbox') {
+        visible_day[check.name.substring(4) as keyof typeof visible_day] = check.checked;
+      }
+      if (check.type == 'time') {
+        const start = Number((parent?.querySelector(`input[name="time_from"]`) as HTMLInputElement).value.replace(':', ''));
+        let end = Number((parent?.querySelector(`input[name="time_to"]`) as HTMLInputElement).value.replace(':', ''));
+        if (end < start) {
+          end += 2400;
+        }
+        visible_time_center = (start + end) / 2;
+        if (visible_time_center >= 2400) {
+          visible_time_center -= 2400;
+        }
+        visible_time_delta = end - start;
+      }
 
       renderLast();
     }

@@ -1,7 +1,11 @@
 use actix_files::NamedFile;
-use actix_web::{web, App, HttpResponse, HttpServer, middleware};
+use actix_web::{web, App, Error, HttpResponse, HttpServer, middleware};
 use serde::{Deserialize, Serialize};
 use derive_getters::Getters;
+use bytes::Bytes;
+use std::task::{Context, Poll};
+use std::pin::Pin;
+use futures::stream::Stream;
 
 struct AABB {
     minlat: f32,
@@ -74,6 +78,13 @@ struct Coord {
     lng: f64,
 }
 
+struct KiseiRow {
+    id: String,
+    row: String,
+    offsets: String,
+    last: bool,
+}
+
 #[derive(Debug, Serialize)]
 struct APIResult {
     id: String,
@@ -82,7 +93,64 @@ struct APIResult {
     offsets: Option<Vec<f64>>,
 }
 
-fn api(aabb_query: AABBQuery) -> Option<Vec<APIResult>> {
+struct LazyAPIResults {
+    rows: Vec<KiseiRow>,
+    index: usize,
+    finished: bool,
+}
+
+impl Stream for LazyAPIResults {
+    type Item = Result<Bytes, Error>;
+
+    fn poll_next(self: Pin<&mut Self>, _: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+        let this = self.get_mut();
+
+        if this.finished {
+            return Poll::Ready(None);
+        }
+        match this.rows.get(this.index) {
+            Some(row) => {
+                let json = {
+                    if row.last {
+                        APIResult {
+                            id: row.id.clone(),
+                            row: None,
+                            coords: None,
+                            offsets: None,
+                        }
+                    } else {
+                        let mut r = row.row.lines().map(|r| r.to_owned()).collect::<Vec<_>>();
+                        let coords = r[17].split('"').map(|s| {
+                            let sp = s.split(' ');
+                            Coord { lat: sp.clone().nth(1).unwrap().parse::<f64>().unwrap(), lng: sp.clone().nth(0).unwrap().parse::<f64>().unwrap() }
+                        }).collect::<Vec<_>>();
+                        r[17] = "".to_owned();
+                        APIResult {
+                            id: row.id.clone(),
+                            row: Some(r),
+                            coords: Some(coords),
+                            offsets: Some(row.offsets.lines().map(|s| s.parse::<f64>().unwrap()).collect()),
+                        }
+                    }
+                };
+                let res = serde_json::to_string(&json).unwrap();
+                let res = if this.index == 0 {
+                    format!("[{}", res)
+                } else {
+                    format!(",{}", res)
+                };
+                this.index += 1;
+                Poll::Ready(Some(Ok(Bytes::from(res))))
+            }
+            None => {
+                this.finished = true;
+                Poll::Ready(Some(Ok(Bytes::from(if this.index == 0 { "[]" } else { "]" }))))
+            }
+        }
+    }
+}
+
+fn api(aabb_query: AABBQuery) -> Option<LazyAPIResults> {
     let (aabb, last_aabb_opt) = aabb_query.inner();
     let last_aabb = last_aabb_opt.unwrap_or(AABB::zeros());
     let singleton = singleton().unwrap();
@@ -95,32 +163,26 @@ fn api(aabb_query: AABBQuery) -> Option<Vec<APIResult>> {
         return None;
     }
     if len == 0 {
-        return Some(vec![]);
+        return Some(LazyAPIResults {
+            rows: vec![],
+            index: 0,
+            finished: false,
+        });
     }
-    let result: Vec<APIResult> = {
+    let result = {
         let mut stmt = con.prepare(format!("select id, row, offsets, {}<=maxlat and minlat<={} and {}<=maxlng and minlng<={} as last from kiseis where {}<=maxlat and minlat<={} and {}<=maxlng and minlng<={};", last_aabb.minlat, last_aabb.maxlat, last_aabb.minlng, last_aabb.maxlng, aabb.minlat, aabb.maxlat, aabb.minlng, aabb.maxlng).as_str()).unwrap();
-        stmt.query_and_then::<_, rusqlite::Error, _, _>(rusqlite::params![], |row| {
-            if row.get::<_, bool>(3).unwrap() {
-                return Ok(APIResult {
+        LazyAPIResults {
+            rows: stmt.query_and_then(rusqlite::params![], |row| {
+                Ok::<KiseiRow, rusqlite::Error>(KiseiRow {
                     id: row.get(0).unwrap(),
-                    row: None,
-                    coords: None,
-                    offsets: None,
-                });
-            }
-            let mut r = row.get::<_, String>(1).unwrap().lines().map(|r| r.to_owned()).collect::<Vec<_>>();
-            let coords = r[17].split('"').map(|s| {
-                let sp = s.split(' ');
-                Coord { lat: sp.clone().nth(1).unwrap().parse::<f64>().unwrap(), lng: sp.clone().nth(0).unwrap().parse::<f64>().unwrap() }
-            }).collect::<Vec<_>>();
-            r[17] = "".to_owned();
-            Ok(APIResult {
-                id: row.get(0).unwrap(),
-                row: Some(r),
-                coords: Some(coords),
-                offsets: Some(row.get::<_, String>(2).unwrap().lines().map(|s| s.parse::<f64>().unwrap()).collect()),
-            })
-        }).unwrap().map(|r| r.unwrap()).collect()
+                    row: row.get(1).unwrap(),
+                    offsets: row.get(2).unwrap(),
+                    last: row.get(3).unwrap(),
+                })
+            }).unwrap().collect::<Result<Vec<_>, _>>().unwrap(),
+            index: 0,
+            finished: false,
+        }
         // thread 'actix-rt|system:0|arbiter:2' panicked at 'called `Result::unwrap()` on an `Err` value: SqliteFailure(Error { code: DatabaseCorrupt, extended_code: 11 }, Some("database disk image is malformed"))', src/main.rs:364:31
     };
     Some(result)
@@ -179,7 +241,10 @@ impl AABBQuery {
 
 async fn get_api(info: web::Query<AABBQuery>) -> impl actix_web::Responder {
     match api(info.into_inner()) {
-        Some(res) => HttpResponse::Ok().json(res),
+        //Some(res) => HttpResponse::Ok().json(res),
+        Some(res) => HttpResponse::Ok()
+        .content_type("application/json")
+        .streaming(res),
         None => HttpResponse::TooManyRequests().finish(),
     }
 }

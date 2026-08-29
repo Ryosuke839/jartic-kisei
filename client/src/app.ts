@@ -88,7 +88,7 @@ const columns = ["都道府県コード", "警察署コード", "関連警察署
 const onewayDir = new Map([['2', true], ['3', false], ['4', true], ['6', false], ['7', false], ['8', false], ['9', false], ['10', true], ['11', true], ['12', true], ['13', true], ['14', true], ['15', false], ['16', true], ['20', true], ['21', false], ['22', true], ['23', true], ['24', false], ['25', false], ['26', false], ['27', false], ['28', false], ['29', false], ['30', false], ['32', true], ['33', false], ['34', true], ['35', false], ['36', false], ['37', false], ['38', false], ['39', true], ['40', false], ['41', false], ['42', true], ['44', false], ['45', false], ['46', true], ['47', true]]);
 const visible_kisei = new Map(Array.from(names.keys()).map(k => [k, true]));
 let transparent_kisei = true;
-const visible_vehicle = new Array(48).fill(true);
+const visible_vehicle = new Array(60).fill(true);
 const visible_day = {weekday: true, saturday: true, sunday: true, holiday: true};
 let visible_time_center = 1200;
 let visible_time_delta = 1200;
@@ -630,12 +630,12 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
         return [(() => {
           if (negate) {
             let i;
-            for (i = 0; i < 48; ++i) {
+            for (i = 0; i < 60; ++i) {
               if (!visible_vehicle[i]) {
                 break;
               }
             }
-            if (i == 48) {
+            if (i == 60) {
               return true;
             }
           }
@@ -643,8 +643,8 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
             if (row_slice[5 + i] != '') {
               any = true;
               let bits = Number(row_slice[5 + i]);
-              for (let j = 0; j < 12 && bits >= 1; ++j) {
-                if (bits % 10 == 1 && visible_vehicle[i * 12 + j]) {
+              for (let j = 0; j < 15 && bits >= 1; ++j) {
+                if (bits % 10 == 1 && visible_vehicle[i * 15 + j]) {
                   return true;
                 }
                 bits = Math.floor(bits / 10);
@@ -719,20 +719,20 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
         any = any || any_local;
       }
       const include = new Map<string, string>([
-        ['6', '000000000400'],
-        ['8', '000000000001'],
-        ['14', '000000000001'],
-        ['25', '000000000008'],
-        ['55', '000000000100'],
-        ['56', '000000000100'],
-        ['81', '000000000200'],
-        ['82', '000000000200'],
-        ['83', '000000000200'],
-        ['84', '000000000200'],
+        ['6', '000000000002000'],
+        ['8', '000000000000100'],
+        ['14', '000000000000100'],
+        ['25', '000000000100000'],
+        ['55', '000000000000800'],
+        ['56', '000000000000800'],
+        ['81', '000000000001000'],
+        ['82', '000000000001000'],
+        ['83', '000000000001000'],
+        ['84', '000000000001000'],
       ]);
       if (include.has(r.row[10])) {
         any = true;
-        for (let i = 0; i < 12; ++i) {
+        for (let i = 0; i < 15; ++i) {
           let digit = parseInt(include.get(r.row[10])!![i], 16);
           for (let j = 0; j < 4; ++j) {
             if ((digit & 8) != 0 && visible_vehicle[i * 4 + j]) {
@@ -1205,7 +1205,7 @@ addEventListener('change', e => {
       visible_vehicle[Number(check.name)] = check.checked;
 
       let types = '';
-      for (let i = 0; i < 12; ++i) {
+      for (let i = 0; i < 15; ++i) {
         let sum = 0;
         for (let j = 0; j < 4; ++j) {
           const e = parent?.querySelector(`input[name="${i * 4 + j}"]`);
@@ -1223,7 +1223,7 @@ addEventListener('change', e => {
     }
     if (check instanceof HTMLSelectElement) {
       if (check.value != '') {
-        for (let i = 0; i < 12; ++i) {
+        for (let i = 0; i < 15; ++i) {
           let digit = parseInt(check.value[i], 16);
           for (let j = 0; j < 4; ++j) {
             const e = parent?.querySelector(`input[name="${i * 4 + j}"]`);

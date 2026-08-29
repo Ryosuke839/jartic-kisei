@@ -1,8 +1,8 @@
 use actix_files::NamedFile;
 use actix_web::{web, App, Error, HttpResponse, HttpServer, middleware};
 use serde::{Deserialize, Serialize};
-use derive_getters::Getters;
 use bytes::Bytes;
+use std::sync::Mutex;
 use std::task::{Context, Poll};
 use std::pin::Pin;
 use futures::stream::Stream;
@@ -49,27 +49,38 @@ impl AABB {
     }
 }
 
-#[derive(Getters)]
-struct Singleton {
-    con: rusqlite::Connection,
+fn open_db() -> rusqlite::Result<rusqlite::Connection> {
+    rusqlite::Connection::open_with_flags(
+        "./../kisei.db",
+        rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
+    )
 }
 
-fn singleton() -> Result<&'static Singleton, rusqlite::Error> {
-    static mut CON: Option<rusqlite::Connection> = None;
-    static mut SINGLETON: Option<Singleton> = None;
-
-    unsafe {
-        if SINGLETON.is_none() {
-            if CON.is_none() {
-                println!("  opening...");
-                CON = Some(rusqlite::Connection::open_with_flags("./../kisei.db", rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX)?);
-            }
-            SINGLETON = Some(Singleton {
-                con: CON.take().unwrap(),
-            })
+fn get_text_lossy(row: &rusqlite::Row, idx: usize) -> rusqlite::Result<String> {
+    Ok(match row.get_ref(idx)? {
+        rusqlite::types::ValueRef::Text(bytes) | rusqlite::types::ValueRef::Blob(bytes) => {
+            String::from_utf8_lossy(bytes).into_owned()
         }
-        Ok(SINGLETON.as_ref().unwrap())
-    }
+        rusqlite::types::ValueRef::Null => String::new(),
+        _ => String::new(),
+    })
+}
+
+fn parse_coords(s: &str) -> Vec<Coord> {
+    s.split('"').filter_map(|part| {
+        let mut parts = part.split_whitespace();
+        let lng = parts.next()?.parse().ok()?;
+        let lat = parts.next()?.parse().ok()?;
+        Some(Coord { lat, lng })
+    }).collect()
+}
+
+fn parse_offsets(s: &str) -> Vec<f64> {
+    s.lines().filter_map(|line| line.parse().ok()).collect()
+}
+
+fn is_finite_aabb(aabb: &AABB) -> bool {
+    aabb.minlat.is_finite() && aabb.maxlat.is_finite() && aabb.minlng.is_finite() && aabb.maxlng.is_finite()
 }
 
 #[derive(Debug, Serialize)]
@@ -119,21 +130,20 @@ impl Stream for LazyAPIResults {
                             offsets: None,
                         }
                     } else {
-                        let mut r = row.row.lines().map(|r| r.to_owned()).collect::<Vec<_>>();
-                        let coords = r[17].split('"').map(|s| {
-                            let sp = s.split(' ');
-                            Coord { lat: sp.clone().nth(1).unwrap().parse::<f64>().unwrap(), lng: sp.clone().nth(0).unwrap().parse::<f64>().unwrap() }
-                        }).collect::<Vec<_>>();
-                        r[17] = "".to_owned();
+                        let mut r = row.row.lines().map(|s| s.to_owned()).collect::<Vec<_>>();
+                        let coords = r.get(17).map(|s| parse_coords(s)).unwrap_or_default();
+                        if let Some(cell) = r.get_mut(17) {
+                            cell.clear();
+                        }
                         APIResult {
                             id: row.id.clone(),
                             row: Some(r),
                             coords: Some(coords),
-                            offsets: Some(row.offsets.lines().map(|s| s.parse::<f64>().unwrap()).collect()),
+                            offsets: Some(parse_offsets(&row.offsets)),
                         }
                     }
                 };
-                let res = serde_json::to_string(&json).unwrap();
+                let res = serde_json::to_string(&json).unwrap_or_else(|_| "null".to_owned());
                 let res = if this.index == 0 {
                     format!("[{}", res)
                 } else {
@@ -150,42 +160,65 @@ impl Stream for LazyAPIResults {
     }
 }
 
-fn api(aabb_query: AABBQuery) -> Option<LazyAPIResults> {
+fn api(aabb_query: AABBQuery, con: &rusqlite::Connection) -> rusqlite::Result<Option<LazyAPIResults>> {
     let (aabb, last_aabb_opt) = aabb_query.inner();
-    let last_aabb = last_aabb_opt.unwrap_or(AABB::zeros());
-    let singleton = singleton().unwrap();
-    let con = singleton.con();
-    let mut stmt = con.prepare(format!("select sum(len) from kiseis where ({}<=maxlat and minlat<={} and {}<=maxlng and minlng<={});", aabb.minlat, aabb.maxlat, aabb.minlng, aabb.maxlng).as_str()).unwrap();
-    let len = stmt.query_and_then::<_, rusqlite::Error, _, _>(rusqlite::params![], |row| {
-        Ok(row.get::<_, isize>(0).unwrap())
-    }).unwrap().next().unwrap().unwrap();
-    if len > 65536 {
-        return None;
-    }
-    if len == 0 {
-        return Some(LazyAPIResults {
+    if !is_finite_aabb(&aabb) {
+        return Ok(Some(LazyAPIResults {
             rows: vec![],
             index: 0,
             finished: false,
-        });
+        }));
     }
-    let result = {
-        let mut stmt = con.prepare(format!("select id, row, offsets, {}<=maxlat and minlat<={} and {}<=maxlng and minlng<={} as last from kiseis where {}<=maxlat and minlat<={} and {}<=maxlng and minlng<={};", last_aabb.minlat, last_aabb.maxlat, last_aabb.minlng, last_aabb.maxlng, aabb.minlat, aabb.maxlat, aabb.minlng, aabb.maxlng).as_str()).unwrap();
-        LazyAPIResults {
-            rows: stmt.query_and_then(rusqlite::params![], |row| {
-                Ok::<KiseiRow, rusqlite::Error>(KiseiRow {
-                    id: row.get(0).unwrap(),
-                    row: row.get(1).unwrap(),
-                    offsets: row.get(2).unwrap(),
-                    last: row.get(3).unwrap(),
-                })
-            }).unwrap().collect::<Result<Vec<_>, _>>().unwrap(),
+    let last_aabb = last_aabb_opt.filter(is_finite_aabb).unwrap_or_else(AABB::zeros);
+
+    let mut stmt = con.prepare(
+        "SELECT COALESCE(SUM(len), 0) FROM kiseis WHERE ?1<=maxlat AND minlat<=?2 AND ?3<=maxlng AND minlng<=?4",
+    )?;
+    let len: i64 = stmt.query_row(
+        rusqlite::params![aabb.minlat as f64, aabb.maxlat as f64, aabb.minlng as f64, aabb.maxlng as f64],
+        |row| row.get(0),
+    )?;
+    if len > 65536 {
+        return Ok(None);
+    }
+    if len == 0 {
+        return Ok(Some(LazyAPIResults {
+            rows: vec![],
             index: 0,
             finished: false,
-        }
-        // thread 'actix-rt|system:0|arbiter:2' panicked at 'called `Result::unwrap()` on an `Err` value: SqliteFailure(Error { code: DatabaseCorrupt, extended_code: 11 }, Some("database disk image is malformed"))', src/main.rs:364:31
-    };
-    Some(result)
+        }));
+    }
+
+    let mut stmt = con.prepare(
+        "SELECT id, row, offsets, (?1<=maxlat AND minlat<=?2 AND ?3<=maxlng AND minlng<=?4) AS last \
+         FROM kiseis WHERE ?5<=maxlat AND minlat<=?6 AND ?7<=maxlng AND minlng<=?8",
+    )?;
+    let rows = stmt.query_map(
+        rusqlite::params![
+            last_aabb.minlat as f64,
+            last_aabb.maxlat as f64,
+            last_aabb.minlng as f64,
+            last_aabb.maxlng as f64,
+            aabb.minlat as f64,
+            aabb.maxlat as f64,
+            aabb.minlng as f64,
+            aabb.maxlng as f64,
+        ],
+        |row| {
+            Ok(KiseiRow {
+                id: get_text_lossy(row, 0)?,
+                row: get_text_lossy(row, 1)?,
+                offsets: get_text_lossy(row, 2)?,
+                last: row.get(3).unwrap_or(false),
+            })
+        },
+    )?.filter_map(|r| r.map_err(|e| eprintln!("row error: {e}")).ok()).collect();
+
+    Ok(Some(LazyAPIResults {
+        rows,
+        index: 0,
+        finished: false,
+    }))
 }
 
 async fn get_index() -> actix_web::Result<NamedFile> {
@@ -239,26 +272,37 @@ impl AABBQuery {
     }
 }
 
-async fn get_api(info: web::Query<AABBQuery>) -> impl actix_web::Responder {
-    match api(info.into_inner()) {
-        //Some(res) => HttpResponse::Ok().json(res),
-        Some(res) => HttpResponse::Ok()
-        .content_type("application/json")
-        .streaming(res),
-        None => HttpResponse::TooManyRequests().finish(),
+async fn get_api(info: web::Query<AABBQuery>, db: web::Data<Mutex<rusqlite::Connection>>) -> impl actix_web::Responder {
+    let con = match db.lock() {
+        Ok(con) => con,
+        Err(poisoned) => poisoned.into_inner(),
+    };
+    match api(info.into_inner(), &con) {
+        Ok(Some(res)) => HttpResponse::Ok()
+            .content_type("application/json")
+            .streaming(res),
+        Ok(None) => HttpResponse::TooManyRequests().finish(),
+        Err(e) => {
+            eprintln!("api error: {e}");
+            HttpResponse::InternalServerError().finish()
+        }
     }
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     println!("ready.");
-    HttpServer::new(|| App::new()
-        .wrap(middleware::Compress::default())
-        .service(web::resource("/").to(get_index))
-        .service(web::resource("/@{coord:.*}").to(get_index))
-        .service(web::resource("/app.js").to(get_app))
-        .service(web::resource("/signs/{name}").to(get_sign))
-        .service(web::resource("/api").to(get_api)))
+    HttpServer::new(|| {
+        let con = open_db().expect("failed to open kisei.db");
+        App::new()
+            .app_data(web::Data::new(Mutex::new(con)))
+            .wrap(middleware::Compress::default())
+            .service(web::resource("/").to(get_index))
+            .service(web::resource("/@{coord:.*}").to(get_index))
+            .service(web::resource("/app.js").to(get_app))
+            .service(web::resource("/signs/{name}").to(get_sign))
+            .service(web::resource("/api").to(get_api))
+    })
         .bind(("0.0.0.0", 3000))?
         .run()
         .await

@@ -137,7 +137,7 @@ fn should_skip(row: &[String]) -> bool {
     let unique_key = field(row, 14);
     let unique_n = js_number(Some(unique_key));
     let tokyo_skip = field(row, 0) == "8"
-        && ((unique_n >= 13497.0 && unique_n <= 13607.0) || unique_key == "101782");
+        && ((unique_n >= 13497.0 && unique_n <= 13607.0) || unique_key == "08202606011675400000000000101933" || unique_key == "08202606001967400000000000013227");
     tokyo_skip || field(row, 17).is_empty()
 }
 

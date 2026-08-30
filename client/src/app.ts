@@ -301,13 +301,57 @@ function getIcon(row: string[], iconSize: number): google.maps.Icon | undefined 
         return '5_car';
       if (check(row, 90, ['0', '0', '0', '10']))
         return '5_car';
+      if (check(row, 90, ['0', '0', '0', '1']))
+        return '5_car';
       return '5_motor';
     }
     if (check(row, 45, ['10', '0', '0', '1000']))
       return '5_motor';
+    if (check(row, 45, ['0', '0', '100100100', '100000000000000']))
+      return '5_truck';
+    if (check(row, 45, ['0', '0', '100100100', '0']))
+      return '5_truck';
+    if (check(row, 45, ['0', '0', '101101100', '0']))
+      return '5_truck';
+    if (check(row, 45, ['0', '0', '10000', '0']))
+      return '5_truck';
+    if (check(row, 45, ['0', '10', '100100100', '0']))
+      return '5_heavy';
+    if (check(row, 45, ['0', '1000', '10000', '0']))
+      return '5_heavy';
+    if (check(row, 45, ['100000000', '1', '100000000', '0']))
+      return '5_heavy';
+    if (check(row, 45, ['100000000', '1', '0', '0']))
+      return '5_heavy';
+    if (check(row, 45, ['0', '1', '100000000', '0']))
+      return '5_heavy';
+    if (check(row, 45, ['0', '1', '100001000', '0']))
+      return '5_heavy';
+    if (check(row, 45, ['0', '1', '100000100', '0']))
+      return '5_heavy';
+    if (check(row, 45, ['0', '1', '0', '0']))
+      return '5_heavy';
+    if (check(row, 45, ['0', '100', '0', '0']))
+      return '5_heavy';
+    if (check(row, 45, ['100000000','1','101001000','0']))
+      return '5_heavy';
+    if (check(row, 45, ['100000000','101','100000000','0']))
+      return '5_heavy';
+    if (check(row, 45, ['10000000','10','100100100','0']))
+      return '5_heavy';
+    if (check(row, 45, ['100000000','1','100010000','0']))
+      if (check(row, 90, ['10000000','10','0','0']))
+        return '5_truck';
+    if (check(row, 45, ['100000000','1001','100010000','0']))
+      if (check(row, 90, ['10000000','10','0','0']))
+        return '5_truck';
     if (check(row, 90, ['0', '0', '0', '100']))
       return '5_motor';
     if (check(row, 90, ['0', '0', '0', '100000']))
+      return '5_motor';
+    if (check(row, 90, ['0', '0', '0', '100000000000100']))
+      return '5_motor';
+    if (check(row, 90, ['0', '0', '0', '100000000100000']))
       return '5_motor';
     if (check(row, 90, ['0', '0', '0', '101']))
       return '5_car';
@@ -335,42 +379,6 @@ function getIcon(row: string[], iconSize: number): google.maps.Icon | undefined 
       return '5_motorcycle';
     if (check(row, 45, ['0', '0', '0', '1']))
       return '5_motorcycle';
-    if (check(row, 45, ['0', '0', '100100100', '100000000000000']))
-      return '5_truck';
-    if (check(row, 45, ['0', '0', '100100100', '0']))
-      return '5_truck';
-    if (check(row, 45, ['0', '0', '101101100', '0']))
-      return '5_truck';
-    if (check(row, 45, ['0', '0', '10000', '0']))
-      return '5_truck';
-    if (check(row, 45, ['0', '10', '100100100', '0']))
-      return '5_heavy';
-    if (check(row, 45, ['0', '1000', '10000', '0']))
-      return '5_heavy';
-    if (check(row, 45, ['100000000', '1', '100000000', '0']))
-      return '5_heavy';
-    if (check(row, 45, ['100000000', '1', '0', '0']))
-      return '5_heavy';
-    if (check(row, 45, ['0', '1', '100000000', '0']))
-      return '5_heavy';
-    if (check(row, 45, ['0', '1', '100001000', '0']))
-      return '5_heavy';
-    if (check(row, 45, ['0', '1', '0', '0']))
-      return '5_heavy';
-    if (check(row, 45, ['0', '100', '0', '0']))
-      return '5_heavy';
-    if (check(row, 45, ['100000000','1','101001000','0']))
-      return '5_heavy';
-    if (check(row, 45, ['100000000','101','100000000','0']))
-      return '5_heavy';
-    if (check(row, 45, ['10000000','10','100100100','0']))
-      return '5_heavy';
-    if (check(row, 45, ['100000000','1','100010000','0']))
-      if (check(row, 90, ['10000000','10','0','0']))
-        return '5_truck';
-    if (check(row, 45, ['100000000','1001','100010000','0']))
-      if (check(row, 90, ['10000000','10','0','0']))
-        return '5_truck';
     return '5';
   };
   const trans = new Map<string, (row: string[]) => string>([
@@ -534,10 +542,10 @@ function rowToSubjects(row: string[]): string[] {
   let result: string[] = [];
   for (let i = 40; i < 130; i += 9) {
     let subject = '';
-    if (row[i] != '') {
+    if (row[i] != '' && !(row[i].padStart(4, '0') == '0101' && row[i + 1] == '1231')) {
       subject += ` ${Number(row[i].padStart(4, '0').substring(0, 2))}月${Number(row[i].padStart(4, '0').substring(2, 4))}日`;
     }
-    if (row[i + 1] != '' && row[i + 1] != row[i]) {
+    if (row[i + 1] != '' && row[i + 1] != row[i] && !(row[i].padStart(4, '0') == '0101' && row[i + 1] == '1231')) {
       subject += '〜'
       if (!row[i].startsWith(row[i + 1].padStart(4, '0').substring(0, 2))) {
         subject += `${Number(row[i + 1].padStart(4, '0').substring(0, 2))}月`;
@@ -686,7 +694,7 @@ function showInfo(key: string | undefined, e: google.maps.MapMouseEvent) {
       } else {
         content += `<span style="display: inline-block; margin: .5em; border: 1.5px solid; opacity: ${o};"></span><br>`;
       }
-      content += kisei.row[13] + '<br>' + rowToSubjects(kisei.row).join('<br>');
+      content += (kisei.row[13] || names.get(kisei.row[11])) + '<br>' + rowToSubjects(kisei.row).join('<br>');
       content += '</div>';
     }
   }
@@ -728,7 +736,7 @@ function showDetail() {
       } else {
         content += `<span style="display: inline-block; margin: .5em; border: 1.5px solid; opacity: ${o};"></span><br>`;
       }
-      content += kisei.row[13] + '<br>' + rowToSubjects(kisei.row).join('<br>');
+      content += (kisei.row[13] || names.get(kisei.row[11])) + '<br>' + rowToSubjects(kisei.row).join('<br>');
       content += '<br>' + kisei.row.map((v, i) => (columns[i] != null && v != '' && i != 34 && i != 36 && i != 38) ? `[${i + 1} ${columns[i]}] ${v}<br>` : '').join('');
       content += '</div>';
     }

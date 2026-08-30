@@ -16,13 +16,20 @@ use std::path::Path;
 use encoding_rs::SHIFT_JIS;
 use encoding_rs_io::DecodeReaderBytesBuilder;
 
-const OLD_NCOLS: usize = 224;
-
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
 struct Coord {
     lat: f64,
     lng: f64,
+}
+
+impl Coord {
+    fn to_le_bytes(&self) -> [u8; 16] {
+        let mut bytes = [0u8; 16];
+        bytes[..8].copy_from_slice(&self.lat.to_le_bytes());
+        bytes[8..16].copy_from_slice(&self.lng.to_le_bytes());
+        bytes
+    }
 }
 
 fn field(row: &[String], i: usize) -> &str {
@@ -37,10 +44,6 @@ fn js_number(s: Option<&str>) -> f64 {
     }
 }
 
-fn pad_start_4(s: &str) -> String {
-    format!("{s:0>4}")
-}
-
 fn get_distance(a: &Coord, b: &Coord) -> f64 {
     let dlat = b.lat - a.lat;
     let dlng = b.lng - a.lng;
@@ -48,7 +51,7 @@ fn get_distance(a: &Coord, b: &Coord) -> f64 {
 }
 
 fn parse_coords(s: &str) -> Vec<Coord> {
-    s.split('"')
+    s.split(&[';', '/'][..])
         .map(|part| {
             let mut parts = part.split(' ');
             Coord {
@@ -59,92 +62,17 @@ fn parse_coords(s: &str) -> Vec<Coord> {
         .collect()
 }
 
-/// Map a k_2.1 (170-col) record onto the original 224-col layout.
-fn map_k21(src: &[String]) -> Vec<String> {
-    let get = |i: usize| src.get(i).cloned().unwrap_or_default();
-    let mut dst = vec![String::new(); OLD_NCOLS];
-    for i in 0..13 {
-        dst[i] = get(i + 1);
-    }
-    dst[13] = get(15);
-    dst[14] = get(20);
-    dst[15] = get(21);
-    dst[16] = get(22);
-    dst[17] = get(23).replace(';', "\"");
-    dst[18] = get(24);
-    dst[19] = get(25);
-    dst[21] = get(26);
-    dst[22] = get(27);
-    dst[23] = get(28);
-    dst[27] = get(32);
-    dst[34] = get(33);
-    dst[35] = get(35);
-    dst[37] = get(37);
-    dst[41] = get(39);
-    for i in 0..45 {
-        dst[46 + i] = get(40 + i);
-    }
-    for i in 0..45 {
-        dst[91 + i] = get(85 + i);
-    }
-    dst[138] = get(130);
-    dst[139] = get(131);
-    dst[146] = get(132);
-    dst[148] = get(133);
-    dst[149] = get(137);
-    dst[154] = get(135);
-    dst[155] = get(156);
-    dst[156] = get(140);
-    dst[158] = get(143);
-    dst[160] = get(159);
-    dst[161] = get(152);
-    dst[163] = get(144);
-    dst[166] = get(165);
-    dst[167] = get(154);
-    dst[168] = get(146);
-    dst[169] = get(141);
-    dst[176] = get(153);
-    dst[177] = get(142);
-    dst[186] = get(148);
-    dst[190] = get(149);
-    dst[191] = get(150);
-    dst[192] = get(151);
-    dst[199] = get(160);
-    dst[200] = get(161);
-    dst[201] = get(136);
-    dst[204] = get(162);
-    dst[206] = get(145);
-    dst[208] = get(164);
-    dst[209] = get(157);
-    dst[210] = get(158);
-    dst[211] = get(134);
-    dst[218] = get(166);
-    dst[220] = get(167);
-    dst[221] = get(168);
-    dst[223] = get(169);
-    dst
-}
-
-fn normalize_row(row: Vec<String>) -> Vec<String> {
-    if field(&row, 0) == "k_2.1" {
-        map_k21(&row)
-    } else {
-        row
-    }
-}
-
 fn should_skip(row: &[String]) -> bool {
-    let unique_key = field(row, 14);
-    let unique_n = js_number(Some(unique_key));
-    let tokyo_skip = field(row, 0) == "8"
-        && ((unique_n >= 13497.0 && unique_n <= 13607.0) || unique_key == "08202606011675400000000000101933" || unique_key == "08202606001967400000000000013227");
-    tokyo_skip || field(row, 17).is_empty()
+    let unique_key = field(row, 20);
+    let tokyo_skip = unique_key == "08202606011675400000000000101933" || unique_key == "08202606001967400000000000013227";
+    tokyo_skip
 }
 
 struct PreparedKisei {
     id: String,
     row: String,
-    offsets: String,
+    coords: Vec<u8>,
+    offsets: Vec<u8>,
     len: i64,
     minlat: f64,
     maxlat: f64,
@@ -153,7 +81,7 @@ struct PreparedKisei {
 }
 
 fn prepare_kisei(row: &[String]) -> Option<PreparedKisei> {
-    let coords = parse_coords(field(row, 17));
+    let coords = parse_coords(field(row, 23));
     if coords.is_empty() {
         return None;
     }
@@ -192,53 +120,21 @@ fn prepare_kisei(row: &[String]) -> Option<PreparedKisei> {
         return None;
     }
 
-    let mut filtered: Vec<String> = row
-        .iter()
-        .map(|s| {
-            if s == "-1" || s == "0" {
-                String::new()
-            } else {
-                s.clone()
-            }
-        })
-        .collect();
-    while filtered.len() < 136 {
-        filtered.push(String::new());
-    }
-    let mut i = 46usize;
-    while i < 136 {
-        if field(&filtered, i + 2).is_empty() && !field(&filtered, i + 3).is_empty() {
-            filtered[i + 2] = "0".to_string();
-        }
-        if field(&filtered, i + 3).is_empty() && !field(&filtered, i + 2).is_empty() {
-            filtered[i + 3] = "0".to_string();
-        }
-        if pad_start_4(field(&filtered, i)) == "0101" && field(&filtered, i + 1) == "1231" {
-            filtered[i].clear();
-            filtered[i + 1].clear();
-        }
-        if pad_start_4(field(&filtered, i + 2)) == "0000" && field(&filtered, i + 3) == "2400" {
-            filtered[i + 2].clear();
-            filtered[i + 3].clear();
-        }
-        if pad_start_4(field(&filtered, i + 2)) == "0000" && field(&filtered, i + 3) == "2359" {
-            filtered[i + 2].clear();
-            filtered[i + 3].clear();
-        }
-        i += 9;
-    }
-
-    let id_src = format!("\"{}\"", row.join("\",\""));
-    let id = format!("{:x}", md5::compute(id_src.as_bytes()));
+    let id = field(row, 20).to_string();
 
     Some(PreparedKisei {
         id,
-        row: filtered.join("\n"),
+        row: row.iter().enumerate().map(|(i, s)| if i == 23 { "".to_string() } else { s.clone() }).collect::<Vec<_>>().join("\n"),
+        coords: coords
+            .iter()
+            .map(|c| c.to_le_bytes())
+            .flatten()
+            .collect(),
         offsets: offsets
             .iter()
-            .map(|n| n.to_string())
-            .collect::<Vec<_>>()
-            .join("\n"),
+            .map(|n| n.to_le_bytes())
+            .flatten()
+            .collect(),
         len: coords.len() as i64,
         minlat,
         maxlat,
@@ -278,14 +174,14 @@ fn main() -> Result<()> {
          DROP TABLE IF EXISTS kiseis;
          CREATE VIRTUAL TABLE IF NOT EXISTS kiseis USING rtree(
            pk, minlat, maxlat, minlng, maxlng,
-           +id CHAR(32), +row TEXT, +offsets TEXT, +len INTEGER
+           +id CHAR(32), +row TEXT, +coords BLOB, +offsets BLOB, +len INTEGER
          );
          BEGIN;",
     )?;
 
     let mut stmt = con.prepare(
-        "INSERT INTO kiseis(pk, id, row, offsets, len, minlat, maxlat, minlng, maxlng)
-         VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+        "INSERT INTO kiseis(pk, id, row, coords, offsets, len, minlat, maxlat, minlng, maxlng)
+         VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
     )?;
 
     let mut kisei_ids = HashSet::new();
@@ -298,8 +194,7 @@ fn main() -> Result<()> {
         let mut rdr = open_csv(file)?;
         for rec in rdr.records() {
             let rec = rec?;
-            let raw: Vec<String> = rec.iter().map(|s| s.to_string()).collect();
-            let row = normalize_row(raw);
+            let row: Vec<String> = rec.iter().map(|s| s.to_string()).collect();
             if should_skip(&row) {
                 continue;
             }
@@ -313,6 +208,7 @@ fn main() -> Result<()> {
                 pk,
                 prepared.id,
                 prepared.row,
+                prepared.coords,
                 prepared.offsets,
                 prepared.len,
                 prepared.minlat,

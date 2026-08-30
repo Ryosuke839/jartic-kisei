@@ -84,18 +84,188 @@ const names = new Map([
   ['118', '車両通行帯及び進行方向別通行区分(組合せ)'],
   ['119', '車両通行帯・進行方向別通行区分・進路変更禁止(組合せ)'],
 ]);
-const columns = ["都道府県コード", "警察署コード", "関連警察署コード1", "関連警察署コード2", "関連警察署コード3", "関連警察署コード4", "関連警察署コード5", "関連警察署コード6", "関連警察署コード7", "関連警察署コード8", "共通規制種別コード", "点・線・面コード", "県別規制種別名称", "規制決定年月日", "都道府県別ユニークキー", "規制番号", "番号", null, "規制場所始点", "規制場所終点", "住所", "交差点名称", "区間または区域", "場所・区間1", "場所・区間2", "場所・区間3", "経由場所・区間", "1-路線1", "1-路線1(コード)", "1-路線2", "1-路線2(コード)", "1-路線3", "1-路線4", "バイパス名", "進入方向", "禁止する方向1", "禁止する方向2", "指定する方向1", "指定する方向2", "指定する方向3", "指定する方向4", "指定・禁止方向の別コード", "方向1_1", "方向1", "一時解除始", "一時解除終", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "関連規制1", "関連規制2", "方向・規制内容等", "既規制等", "規制台帳インデックス", "規制場所始点2", "規制場所始点3", "規制場所終点2", "規制場所終点3", "進路変更禁止区間・地点1", "距離･延長", "距離・延長2", "面積", "速度1", "速度2", "速度3", "速度4", "最低速度", "片側・両側コード", "信号の有無コード", "車両通行帯数", "車両通行帯　指定番号", "中央線の指定", "歩道数", "駐車可台数", "通行方法", "車両の通行区分を指定", "進行方向別通行区分", "道路状況", "側の指定", "側指定コード", "横断歩道設置本数", "停止線本数", "通行帯の指定", "車線数", "対象通行帯1", "対象通行帯2", "対象通行帯3", "対象通行帯4", "信号機種別", "交差点・単路の別", "通行帯内容", "指定通行帯", "専用通行帯", "鉄道路線名", "踏切名称", "踏切種別コード", "車道幅員", "停止禁止幅員", "交差点ID", "右左折の別コード", "右左折方向1コード", "右左折方向2コード", "右左折方向3コード", "右左折方法1コード", "右左折方法2コード", "右左折方法3コード", "左折できる方向コード", "指定区分", "指定方法", "通行区分", "通行方法2", "通行方法3", "駐車方法コード", "停車方法コード", "方位コード", "方法（但し書き)", "歩道通行部分コード", "パーキングメーター基数", "区別（高齢運転者等標章自動車）コード", "交差点形状名コード", "指定区間＿通行帯位置", "指定時間", "種別（横断歩道）コード", "信号機設置管理者（委任）", "制限重量", "設置する通行帯", "停止位置コード", "停止禁止部分コード", "停止禁止面積＿横", "停止禁止面積＿縦", "摘要 禁止する方向", "摘要 指定部分コード", "歩道状況　歩道切り下げコード", "路側帯の種類コード", "更新理由", "区間（備考）1", "備考"];
-const onewayDir = new Map([['2', true], ['3', false], ['4', true], ['6', false], ['7', false], ['8', false], ['9', false], ['10', true], ['11', true], ['12', true], ['13', true], ['14', true], ['15', false], ['16', true], ['20', true], ['21', false], ['22', true], ['23', true], ['24', false], ['25', false], ['26', false], ['27', false], ['28', false], ['29', false], ['30', false], ['32', true], ['33', false], ['34', true], ['35', false], ['36', false], ['37', false], ['38', false], ['39', true], ['40', false], ['41', false], ['42', true], ['44', false], ['45', false], ['46', true], ['47', true]]);
+const columns = [
+  "拡張版標準フォーマット種別・バージョン",
+  "都道府県コード",
+  "警察署コード",
+  "関連警察署コード 1",
+  "関連警察署コード 2",
+  "関連警察署コード 3",
+  "関連警察署コード 4",
+  "関連警察署コード 5",
+  "関連警察署コード 6",
+  "関連警察署コード 7",
+  "関連警察署コード 8",
+  "共通規制種別コード",
+  "点・線・面コード",
+  "県別規制種別名称",
+  "実施機関コード",
+  "意思決定日(新規)",
+  "意思決定改正日",
+  "意思決定廃止日",
+  "データ更新日",
+  "データ更新区分コード",
+  "ユニークキー",
+  "意思決定番号",
+  "枝番号",
+  "規制場所の経度緯度",
+  "規制場所始点",
+  "規制場所終点",
+  "交差点名称(踏切名含む)",
+  "経由地点または規制区域",
+  "除外区間及び区域",
+  "除外区間及び区域の経度緯度",
+  "面規制の外周道路有無コード",
+  "道路種別コード",
+  "路線名(代表)",
+  "進入方向(文字)",
+  "進入方向(座標)",
+  "禁止する方向(文字)",
+  "禁止する方向(座標)",
+  "指定する方向(文字)",
+  "指定する方向(座標)",
+  "指定・禁止方向の別コード",
+  "対象期間 1_開始",
+  "対象期間 1_終了",
+  "規制時間 1_開始",
+  "規制時間 1_終了",
+  "規制曜日コード 1",
+  "対象車両コード 1_A",
+  "対象車両コード 1_B",
+  "対象車両コード 1_C",
+  "対象車両コード 1_D",
+  "対象期間 2_開始",
+  "対象期間 2_終了",
+  "規制時間 2_開始",
+  "規制時間 2_終了",
+  "規制曜日コード 2",
+  "対象車両コード 2_A",
+  "対象車両コード 2_B",
+  "対象車両コード 2_C",
+  "対象車両コード 2_D",
+  "対象期間 3_開始",
+  "対象期間 3_終了",
+  "規制時間 3_開始",
+  "規制時間 3_終了",
+  "規制曜日コード 3",
+  "対象車両コード 3_A",
+  "対象車両コード 3_B",
+  "対象車両コード 3_C",
+  "対象車両コード 3_D",
+  "対象期間 4_開始",
+  "対象期間 4_終了",
+  "規制時間 4_開始",
+  "規制時間 4_終了",
+  "規制曜日コード 4",
+  "対象車両コード 4_A",
+  "対象車両コード 4_B",
+  "対象車両コード 4_C",
+  "対象車両コード 4_D",
+  "対象期間 5_開始",
+  "対象期間 5_終了",
+  "規制時間 5_開始",
+  "規制時間 5_終了",
+  "規制曜日コード 5",
+  "対象車両コード 5_A",
+  "対象車両コード 5_B",
+  "対象車両コード 5_C",
+  "対象車両コード 5_D",
+  "除外期間 1_開始",
+  "除外期間 1_終了",
+  "除外時間 1_開始",
+  "除外時間 1_終了",
+  "除外曜日コード 1",
+  "除外車両コード 1_A",
+  "除外車両コード 1_B",
+  "除外車両コード 1_C",
+  "除外車両コード 1_D",
+  "除外期間 2_開始",
+  "除外期間 2_終了",
+  "除外時間 2_開始",
+  "除外時間 2_終了",
+  "除外曜日コード 2",
+  "除外車両コード 2_A",
+  "除外車両コード 2_B",
+  "除外車両コード 2_C",
+  "除外車両コード 2_D",
+  "除外期間 3_開始",
+  "除外期間 3_終了",
+  "除外時間 3_開始",
+  "除外時間 3_終了",
+  "除外曜日コード 3",
+  "除外車両コード 3_A",
+  "除外車両コード 3_B",
+  "除外車両コード 3_C",
+  "除外車両コード 3_D",
+  "除外期間 4_開始",
+  "除外期間 4_終了",
+  "除外時間 4_開始",
+  "除外時間 4_終了",
+  "除外曜日コード 4",
+  "除外車両コード 4_A",
+  "除外車両コード 4_B",
+  "除外車両コード 4_C",
+  "除外車両コード 4_D",
+  "除外期間 5_開始",
+  "除外期間 5_終了",
+  "除外時間 5_開始",
+  "除外時間 5_終了",
+  "除外曜日コード 5",
+  "除外車両コード 5_A",
+  "除外車両コード 5_B",
+  "除外車両コード 5_C",
+  "除外車両コード 5_D",
+  "規制条件",
+  "規制内容",
+  "距離・延長",
+  "面積",
+  "制限重量",
+  "片側・両側コード",
+  "方位コード",
+  "速度",
+  "ゾーン 30・ゾーン 30 プラス指定コード",
+  "最高速度可変区分コード",
+  "車両通行帯数",
+  "通行帯の指定",
+  "通行帯内容",
+  "中央線の指定",
+  "進行方向別通行区分",
+  "交差点形状名コード",
+  "停止線本数",
+  "普通自転車の交差点進入禁止設置箇所数",
+  "右左折の区別コード",
+  "右左折方法 1",
+  "右左折方法 2",
+  "右左折方法 3",
+  "通行方法",
+  "交差点・単路の別コード",
+  "横断歩道設置本数",
+  "自転車横断帯設置本数",
+  "信号の有無コード",
+  "種別(横断歩道)コード",
+  "信号機設置管理者(委任)",
+  "駐車可台数",
+  "駐車方法コード",
+  "停車方法コード",
+  "パーキングメーター基数",
+  "パーキングチケット発給設",
+  "指定時間",
+  "側指定コード",
+  "摘要 指定部分コード",
+  "路側帯の種類コード",
+  "規制理由",
+  "備考",
+];
 const visible_kisei = new Map(Array.from(names.keys()).map(k => [k, true]));
 let transparent_kisei = true;
 const visible_vehicle = new Array(60).fill(true);
 const visible_day = {weekday: true, saturday: true, sunday: true, holiday: true};
-let visible_time_center = 1200;
-let visible_time_delta = 1200;
+let visible_time_center = 1179.5;
+let visible_time_delta = 2359;
 function speedSign(row: string[]): string {
-  const sp = Number(row[149]);
-  if (row[149] == '120' || sp >= 120) return '28_120';
-  if (row[149] == '110' || sp >= 110) return '28_110';
+  const sp = Number(row[137]);
+  if (row[137] == '120' || sp >= 120) return '28_120';
+  if (row[137] == '110' || sp >= 110) return '28_110';
   if (sp >= 100) return '28';
   if (sp >= 80) return '29';
   if (sp >= 70) return '30';
@@ -107,7 +277,7 @@ function speedSign(row: string[]): string {
 }
 function getIcon(row: string[], iconSize: number): google.maps.Icon | undefined {
   const signs = new Set(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '19', '21', '24', '27', '49', '50', '51', '53', '54', '55', '56', '57', '58', '60', '61', '62', '63', '65', '70', '71', '72', '76', '77', '81', '82', '83', '84', '85', '86', '87', '88', '90', '92', '93', '94', '97', '98', '100', '103', '106', '110', '111', '112', '113', '114', '115', '116', '117', '118', '119']);
-  const ident = (row: string[]) => row[10];
+  const ident = (row: string[]) => row[11];
   const check = (row: string[], offset: number, types: string[]): boolean => {
     if (row[offset] == '' && row[offset + 1] == '' && row[offset + 2] == '' && row[offset + 3] == '') {
       return false;
@@ -123,89 +293,89 @@ function getIcon(row: string[], iconSize: number): google.maps.Icon | undefined 
     return true;
   };
   const prohibit = (row: string[]) => {
-    if (check(row, 51, ['0', '0', '0', '100000']))
-      if (check(row, 96, ['0', '0', '0', '100']))
+    if (check(row, 45, ['0', '0', '0', '100000']))
+      if (check(row, 90, ['0', '0', '0', '100']))
         return '5_cart';
-    if (check(row, 51, ['10', '0', '0', '0'])) {
-      if (check(row, 96, ['0', '0', '10000000', '10']))
+    if (check(row, 45, ['10', '0', '0', '0'])) {
+      if (check(row, 90, ['0', '0', '10000000', '10']))
         return '5_car';
-      if (check(row, 96, ['0', '0', '0', '10']))
+      if (check(row, 90, ['0', '0', '0', '10']))
         return '5_car';
       return '5_motor';
     }
-    if (check(row, 51, ['10', '0', '0', '1000']))
+    if (check(row, 45, ['10', '0', '0', '1000']))
       return '5_motor';
-    if (check(row, 96, ['0', '0', '0', '100']))
+    if (check(row, 90, ['0', '0', '0', '100']))
       return '5_motor';
-    if (check(row, 96, ['0', '0', '0', '100000']))
+    if (check(row, 90, ['0', '0', '0', '100000']))
       return '5_motor';
-    if (check(row, 96, ['0', '0', '0', '101']))
+    if (check(row, 90, ['0', '0', '0', '101']))
       return '5_car';
-    if (check(row, 51, ['0', '0', '0', '100']))
+    if (check(row, 45, ['0', '0', '0', '100']))
       return '5_bicycle';
-    if (check(row, 51, ['0', '0', '0', '100000000000100']))
+    if (check(row, 45, ['0', '0', '0', '100000000000100']))
       return '5_bicycle';
-    if (check(row, 51, ['0', '0', '0', '100000']))
+    if (check(row, 45, ['0', '0', '0', '100000']))
       return '5_light';
-    if (check(row, 51, ['0', '0', '0', '100100']))
+    if (check(row, 45, ['0', '0', '0', '100100']))
       return '5_light';
-    if (check(row, 51, ['0', '0', '0', '100000000100000']))
+    if (check(row, 45, ['0', '0', '0', '100000000100000']))
       return '5_light';
-    if (check(row, 96, ['0', '0', '0', '101010']))
+    if (check(row, 90, ['0', '0', '0', '101010']))
       return '5_car';
-    if (check(row, 96, ['0', '0', '0', '100001']))
+    if (check(row, 90, ['0', '0', '0', '100001']))
       return '5_car';
-    if (check(row, 96, ['0', '0', '10000000','100001']))
+    if (check(row, 90, ['0', '0', '10000000','100001']))
       return '5_car';
-    if (check(row, 51, ['0', '0', '0', '1010']))
+    if (check(row, 45, ['0', '0', '0', '1010']))
       return '5_motorcycle';
-    if (check(row, 51, ['0', '0', '0', '1000']))
+    if (check(row, 45, ['0', '0', '0', '1000']))
       return '5_motorcycle';
-    if (check(row, 51, ['0', '0', '0', '10']))
+    if (check(row, 45, ['0', '0', '0', '10']))
       return '5_motorcycle';
-    if (check(row, 51, ['0', '0', '0', '1']))
+    if (check(row, 45, ['0', '0', '0', '1']))
       return '5_motorcycle';
-    if (check(row, 51, ['0', '0', '100100100', '100000000000000']))
+    if (check(row, 45, ['0', '0', '100100100', '100000000000000']))
       return '5_truck';
-    if (check(row, 51, ['0', '0', '100100100', '0']))
+    if (check(row, 45, ['0', '0', '100100100', '0']))
       return '5_truck';
-    if (check(row, 51, ['0', '0', '101101100', '0']))
+    if (check(row, 45, ['0', '0', '101101100', '0']))
       return '5_truck';
-    if (check(row, 51, ['0', '0', '10000', '0']))
+    if (check(row, 45, ['0', '0', '10000', '0']))
       return '5_truck';
-    if (check(row, 51, ['0', '10', '100100100', '0']))
+    if (check(row, 45, ['0', '10', '100100100', '0']))
       return '5_heavy';
-    if (check(row, 51, ['0', '1000', '10000', '0']))
+    if (check(row, 45, ['0', '1000', '10000', '0']))
       return '5_heavy';
-    if (check(row, 51, ['100000000', '1', '100000000', '0']))
+    if (check(row, 45, ['100000000', '1', '100000000', '0']))
       return '5_heavy';
-    if (check(row, 51, ['100000000', '1', '0', '0']))
+    if (check(row, 45, ['100000000', '1', '0', '0']))
       return '5_heavy';
-    if (check(row, 51, ['0', '1', '100000000', '0']))
+    if (check(row, 45, ['0', '1', '100000000', '0']))
       return '5_heavy';
-    if (check(row, 51, ['0', '1', '100001000', '0']))
+    if (check(row, 45, ['0', '1', '100001000', '0']))
       return '5_heavy';
-    if (check(row, 51, ['0', '1', '0', '0']))
+    if (check(row, 45, ['0', '1', '0', '0']))
       return '5_heavy';
-    if (check(row, 51, ['0', '100', '0', '0']))
+    if (check(row, 45, ['0', '100', '0', '0']))
       return '5_heavy';
-    if (check(row, 51, ['100000000','1','101001000','0']))
+    if (check(row, 45, ['100000000','1','101001000','0']))
       return '5_heavy';
-    if (check(row, 51, ['100000000','101','100000000','0']))
+    if (check(row, 45, ['100000000','101','100000000','0']))
       return '5_heavy';
-    if (check(row, 51, ['10000000','10','100100100','0']))
+    if (check(row, 45, ['10000000','10','100100100','0']))
       return '5_heavy';
-    if (check(row, 51, ['100000000','1','100010000','0']))
-      if (check(row, 96, ['10000000','10','0','0']))
+    if (check(row, 45, ['100000000','1','100010000','0']))
+      if (check(row, 90, ['10000000','10','0','0']))
         return '5_truck';
-    if (check(row, 51, ['100000000','1001','100010000','0']))
-      if (check(row, 96, ['10000000','10','0','0']))
+    if (check(row, 45, ['100000000','1001','100010000','0']))
+      if (check(row, 90, ['10000000','10','0','0']))
         return '5_truck';
     return '5';
   };
   const trans = new Map<string, (row: string[]) => string>([
     ['4', (row: string[]) => {
-      if (row[51] == '' && row[52] == '' && row[53] == '' && row[54] == '' && row[96] == '' && row[97] == '' && row[98] == '' && row[99] == '')
+      if (row[45] == '' && row[46] == '' && row[47] == '' && row[48] == '' && row[90] == '' && row[91] == '' && row[92] == '' && row[93] == '')
         return '4';
       else
         return prohibit(row);
@@ -218,10 +388,10 @@ function getIcon(row: string[], iconSize: number): google.maps.Icon | undefined 
     ['103', (_) => '71'],
     ['110', (_) => '22_bicycle'],
     ['111', (row: string[]) => {
-      if (check(row, 51, ['0', '0', '0', '100']))
+      if (check(row, 45, ['0', '0', '0', '100']))
         return '22_bicycle';
       for (let i = 0; i < 45; i += 9) {
-        const b = Number(row[52 + i] || '0');
+        const b = Number(row[46 + i] || '0');
         if ([1000, 10000, 1000000].some(bit => Math.floor(b / bit) % 10 === 1))
           return '23';
       }
@@ -230,27 +400,27 @@ function getIcon(row: string[], iconSize: number): google.maps.Icon | undefined 
     ['112', speedSign],
     ['113', speedSign],
     ['114', (row: string[]) => {
-      if (row[149] == '' || row[149] == '-1')
+      if (row[137] == '' || row[137] == '-1')
         return '34';
       return speedSign(row);
     }],
     ['115', (_) => '66'],
     ['116', (row: string[]) => {
-      if (row[199] == '2') return '74';
-      if (row[199] == '3') return '75';
+      if (row[160] == '2') return '74';
+      if (row[160] == '3') return '75';
       return '73';
     }],
     ['117', (row: string[]) => {
-      if (row[220] == '1') return '79';
-      if (row[220] == '2') return '78';
+      if (row[167] == '1') return '79';
+      if (row[167] == '2') return '78';
       return '80';
     }],
     ['118', (_) => '59'],
     ['119', (_) => '59'],
   ]);
-  if (signs.has(row[10])) {
+  if (signs.has(row[11])) {
     return {
-      url: `signs/${(trans.get(row[10]) || ident)(row)}.svg`,
+      url: `signs/${(trans.get(row[11]) || ident)(row)}.svg`,
       anchor: new google.maps.Point(iconSize / 2, iconSize / 2),
       scaledSize: new google.maps.Size(iconSize, iconSize),
     };
@@ -258,7 +428,7 @@ function getIcon(row: string[], iconSize: number): google.maps.Icon | undefined 
   return undefined;
 }
 function speedColor(row: string[]): string {
-  const sp = Number(row[149]);
+  const sp = Number(row[137]);
   if (sp >= 100) return '#00FFFF';
   if (sp >= 80) return '#00FFC0';
   if (sp >= 70) return '#00FFA0';
@@ -269,9 +439,9 @@ function speedColor(row: string[]): string {
   return '#00FF00';
 }
 function getColor(row: string[]): string {
-  const type = row[10];
+  const type = row[11];
   if (type == '112' || type == '113' || type == '114') {
-    if ((type == '114') && (row[149] == '' || row[149] == '-1')) {
+    if ((type == '114') && (row[137] == '' || row[137] == '-1')) {
       return '#00FF20';
     }
     return speedColor(row);
@@ -362,7 +532,7 @@ function getColor(row: string[]): string {
 
 function rowToSubjects(row: string[]): string[] {
   let result: string[] = [];
-  for (let i = 46; i < 136; i += 9) {
+  for (let i = 40; i < 130; i += 9) {
     let subject = '';
     if (row[i] != '') {
       subject += ` ${Number(row[i].padStart(4, '0').substring(0, 2))}月${Number(row[i].padStart(4, '0').substring(2, 4))}日`;
@@ -378,7 +548,7 @@ function rowToSubjects(row: string[]): string[] {
       const days = new Map([['1', '土曜、日曜'], ['2', '土曜・日曜・休日'], ['3', '日曜・休日'], ['4', '競輪開催日'], ['5', '競馬開催日'], ['6', '場内馬券発売日'], ['7', '競艇開催日'], ['8', '工事実施日']]);
       subject += ` ${days.get(row[i + 4]) || row[i + 4]}`;
     }
-    if (row[i + 2] != '' && row[i + 3]) {
+    if (row[i + 2] != '' && row[i + 3] && !(row[i + 2].padStart(4, '0') == '0000' && row[i + 3] == '2400')) {
       subject += ` ${Number(row[i + 2].padStart(4, '0').substring(0, 2))}`;
       if (row[i + 2].padStart(4, '0').substring(2, 4) != '00') {
         subject += `.${row[i + 2].padStart(4, '0').substring(2, 4)}`;
@@ -396,7 +566,7 @@ function rowToSubjects(row: string[]): string[] {
       ['車両', '自動車', '乗用', '普乗', '普通', '中乗', '中型', '特定中乗', '特定中型', '軽', '準中乗', '準中型', 'タクシー', '標章車', 'タイヤチェーンを取り付けていない車両'],
       ['大型', '大乗', '大型等', '大型バス', 'バス', 'マイクロ', '路線バス', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15'],
       ['貨物', '普貨', '特定中貨物', '中貨', '大貨等', '大貨', '準中貨', '小特', '大特', 'けん引', 'C11', 'C12', 'C13', 'C14', 'C15'],
-      ['二輪', '自二輪', '自転車', '原付', '小二輪', '軽車両', '歩行者', '遠隔小型', '移動小型', '特定原付', '特例特定原付', 'D12', 'D13', 'D14', 'その他'],
+      ['二輪', '自二輪', '自転車', '原付', '小二輪', '軽車両', '歩行者', '遠隔小型', '移動小型', '特定原付', '特例特定原付', 'その他', 'D13', 'D14', 'その他'],
     ];
     let t: string[] = [];
     for (let j = 0; j < 4; ++j) {
@@ -410,15 +580,18 @@ function rowToSubjects(row: string[]): string[] {
         }
       }
     }
-    if (t.length > 0) {
+    if (t.length > 0 && t.join('・') != '車両') {
       subject += ` ${t.join('・')}`;
     }
     if (subject != '') {
-      if (i >= 91) {
+      if (i >= 85) {
         subject += 'を除く';
       }
       result.push(subject);
     }
+  }
+  if (row[130] != '') {
+    result.push(row[130]);
   }
   return result;
 }
@@ -513,7 +686,7 @@ function showInfo(key: string | undefined, e: google.maps.MapMouseEvent) {
       } else {
         content += `<span style="display: inline-block; margin: .5em; border: 1.5px solid; opacity: ${o};"></span><br>`;
       }
-      content += names.get(kisei.row[10]) + '<br>' + rowToSubjects(kisei.row).join('<br>');
+      content += kisei.row[13] + '<br>' + rowToSubjects(kisei.row).join('<br>');
       content += '</div>';
     }
   }
@@ -555,8 +728,8 @@ function showDetail() {
       } else {
         content += `<span style="display: inline-block; margin: .5em; border: 1.5px solid; opacity: ${o};"></span><br>`;
       }
-      content += names.get(kisei.row[10]) + '<br>' + rowToSubjects(kisei.row).join('<br>');
-      content += '<br>' + kisei.row.map((v, i) => (columns[i] != null && v != '') ? `[${i} ${columns[i]}] ${v}<br>` : '').join('');
+      content += kisei.row[13] + '<br>' + rowToSubjects(kisei.row).join('<br>');
+      content += '<br>' + kisei.row.map((v, i) => (columns[i] != null && v != '' && i != 34 && i != 36 && i != 38) ? `[${i + 1} ${columns[i]}] ${v}<br>` : '').join('');
       content += '</div>';
     }
   }
@@ -624,7 +797,7 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
   const iconSize = Math.pow(2, Math.max((zoom ? zoom : 0) - 17, 0) / 2) * 16;
   const keys = new Map<string, KiseiResponse & Opacity>(filterKeys ?
     kiseis.map(r => [r.id, {...r, opacity: filterKeys.find(([k, _]) => k == r.id)?.[1] || 0}] as [string, KiseiResponse & Opacity]).filter(([_, r]) => r.opacity > 0) :
-    kiseis.filter(r => visible_kisei.get(r.row[10])).map((r): [string, KiseiResponse & Opacity] => [r.id, {...r, opacity: ((r: KiseiResponse) => {
+    kiseis.filter(r => visible_kisei.get(r.row[11])).map((r): [string, KiseiResponse & Opacity] => [r.id, {...r, opacity: ((r: KiseiResponse) => {
       const match = (row_slice: string[], negate: boolean): [boolean, boolean] => {
         let any = false;
         return [(() => {
@@ -704,14 +877,14 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
         })() && (!negate || any), any];
       };
       let any = false;
-      for (let i = 91; i < 136; i += 9) {
+      for (let i = 85; i < 130; i += 9) {
         const [res, any_local] = match(r.row.slice(i, i + 9), true);
         if (res && any_local) {
           return false;
         }
         any = any || any_local;
       }
-      for (let i = 46; i < 91; i += 9) {
+      for (let i = 40; i < 85; i += 9) {
         const [res, any_local] = match(r.row.slice(i, i + 9), false);
         if (res && any_local) {
           return true;
@@ -730,10 +903,10 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
         ['83', '000000000001000'],
         ['84', '000000000001000'],
       ]);
-      if (include.has(r.row[10])) {
+      if (include.has(r.row[11])) {
         any = true;
         for (let i = 0; i < 15; ++i) {
-          let digit = parseInt(include.get(r.row[10])!![i], 16);
+          let digit = parseInt(include.get(r.row[11])!![i], 16);
           for (let j = 0; j < 4; ++j) {
             if ((digit & 8) != 0 && visible_vehicle[i * 4 + j]) {
               return true;
@@ -795,7 +968,7 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
   for (const [key, r] of keys) {
     const icon = getIcon(r.row, iconSize);
     const color = getColor(r.row);
-    if (r.coords.length == 1 || r.row[10] == '12' || r.row[10] == '13' || r.row[10] == '63') {
+    if (r.coords.length == 1 || r.row[11] == '12' || r.row[11] == '13' || r.row[11] == '63') {
       if (!currentMarkers.has(key)) {
         const marker = new google.maps.Marker({
           clickable: true,
@@ -806,9 +979,9 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
         });
         currentMarkers.set(key, [marker]);
         marker.addListener('click', (e: google.maps.MapMouseEvent) => showInfo(key, e));
-        if (zoom >= 17 && r.coords.length > 1 && !currentPolylines.has(key)) {
+        if (zoom >= 17 && (r.coords.length > 1 || r.row[34] || r.row[36] || r.row[38]) && !currentPolylines.has(key)) {
           const polylines = new Array<google.maps.Polyline>;
-          if (r.row[10] == '12' && r.row[0] == '8') {
+          if (r.row[11] == '12' && r.row[1] == '8') {
             const path = [r.coords[0]];
             for (let i = 1; i < r.coords.length; ++i) {
               path.push(r.coords[i]);
@@ -842,7 +1015,7 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
                 strokeWeight: 3,
                 icons: [{
                   icon: {
-                    path: r.row[10] == '12' && i > 1 ? google.maps.SymbolPath.FORWARD_CLOSED_ARROW : google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+                    path: r.row[11] == '12' && i > 1 ? google.maps.SymbolPath.FORWARD_CLOSED_ARROW : google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
                   },
                 }],
                 map: map,
@@ -850,6 +1023,25 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
               polylines.push(polyline);
               polyline.addListener('click', (e: google.maps.MapMouseEvent) => showInfo(key, e));
             }
+          }
+          for (let i = 34; i < 40; i += 2) {
+            r.row[i].split(';').map(c => c.split(' ').map(Number)).forEach(coord => {
+              const polyline = new google.maps.Polyline({
+                clickable: true,
+                path: [r.coords[0], {lat: coord[1], lng: coord[0]}],
+                strokeColor: color,
+                strokeOpacity: 0.5 * r.opacity,
+                strokeWeight: 3,
+                icons: [{
+                  icon: {
+                    path: i == 34 ? google.maps.SymbolPath.BACKWARD_CLOSED_ARROW : i == 36 ? "M -2,-2 2,2 M -2,2 2,-2" : google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                  },
+                }],
+                map: map,
+              });
+              polylines.push(polyline);
+              polyline.addListener('click', (e: google.maps.MapMouseEvent) => showInfo(key, e));
+            });
           }
           currentPolylines.set(key, polylines);
         }
@@ -878,9 +1070,9 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
             strokeColor: color,
             strokeOpacity: 0.5 * r.opacity,
             strokeWeight: 3,
-            icons: r.row[10] == '11' && onewayDir.has(r.row[0]) || r.row[10] == '94' || r.row[10] == '106' ? [{
+            icons: r.row[11] == '11' ? [{
               icon: {
-                path: onewayDir.get(r.row[0]) || r.row[10] == '94' || r.row[10] == '106' ? google.maps.SymbolPath.FORWARD_CLOSED_ARROW : google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+                path: r.row[39] == '2' ? google.maps.SymbolPath.FORWARD_CLOSED_ARROW : google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
               },
               offset: '24px',
               repeat: '48px',
@@ -893,7 +1085,7 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
       }
       const lastMarkers = currentMarkers.get(key);
       const markers = new Array<google.maps.Marker | null>;
-      if (r.row[10] != '20' && r.row[10] != '52' && r.row[10] != '107') {
+      if (r.row[11] != '20' && r.row[11] != '52' && r.row[11] != '107') {
         const step = 0.001 * Math.pow(2, Math.max(18 - (zoom || 18), 0) / 2);
         let next = parseInt(key.substring(28), 16) / 65536 * (r.offsets[r.offsets.length - 1] < step ? r.offsets[r.offsets.length - 1] : step);
         let last = 0;

@@ -66,17 +66,23 @@ fn get_text_lossy(row: &rusqlite::Row, idx: usize) -> rusqlite::Result<String> {
     })
 }
 
-fn parse_coords(s: &str) -> Vec<Coord> {
-    s.split('"').filter_map(|part| {
-        let mut parts = part.split_whitespace();
-        let lng = parts.next()?.parse().ok()?;
-        let lat = parts.next()?.parse().ok()?;
-        Some(Coord { lat, lng })
+fn get_blob(row: &rusqlite::Row, idx: usize) -> rusqlite::Result<Vec<u8>> {
+    Ok(match row.get_ref(idx)? {
+        rusqlite::types::ValueRef::Blob(bytes) => bytes.to_vec(),
+        _ => vec![],
+    })
+}
+
+fn parse_coords(coords: &[u8]) -> Vec<Coord> {
+    coords.chunks(16).map(|chunk| {
+        let lat = f64::from_le_bytes(chunk[..8].try_into().unwrap());
+        let lng = f64::from_le_bytes(chunk[8..16].try_into().unwrap());
+        Coord { lat, lng }
     }).collect()
 }
 
-fn parse_offsets(s: &str) -> Vec<f64> {
-    s.lines().filter_map(|line| line.parse().ok()).collect()
+fn parse_offsets(offsets: &[u8]) -> Vec<f64> {
+    offsets.chunks(8).map(|chunk| f64::from_le_bytes(chunk.try_into().unwrap())).collect()
 }
 
 fn is_finite_aabb(aabb: &AABB) -> bool {
@@ -92,7 +98,8 @@ struct Coord {
 struct KiseiRow {
     id: String,
     row: String,
-    offsets: String,
+    coords: Vec<u8>,
+    offsets: Vec<u8>,
     last: bool,
 }
 
@@ -130,15 +137,10 @@ impl Stream for LazyAPIResults {
                             offsets: None,
                         }
                     } else {
-                        let mut r = row.row.lines().map(|s| s.to_owned()).collect::<Vec<_>>();
-                        let coords = r.get(17).map(|s| parse_coords(s)).unwrap_or_default();
-                        if let Some(cell) = r.get_mut(17) {
-                            cell.clear();
-                        }
                         APIResult {
                             id: row.id.clone(),
-                            row: Some(r),
-                            coords: Some(coords),
+                            row: Some(row.row.lines().map(|s| s.to_owned()).collect::<Vec<_>>()),
+                            coords: Some(parse_coords(&row.coords)),
                             offsets: Some(parse_offsets(&row.offsets)),
                         }
                     }
@@ -190,7 +192,7 @@ fn api(aabb_query: AABBQuery, con: &rusqlite::Connection) -> rusqlite::Result<Op
     }
 
     let mut stmt = con.prepare(
-        "SELECT id, row, offsets, (?1<=maxlat AND minlat<=?2 AND ?3<=maxlng AND minlng<=?4) AS last \
+        "SELECT id, row, coords, offsets, (?1<=maxlat AND minlat<=?2 AND ?3<=maxlng AND minlng<=?4) AS last \
          FROM kiseis WHERE ?5<=maxlat AND minlat<=?6 AND ?7<=maxlng AND minlng<=?8",
     )?;
     let rows = stmt.query_map(
@@ -208,8 +210,9 @@ fn api(aabb_query: AABBQuery, con: &rusqlite::Connection) -> rusqlite::Result<Op
             Ok(KiseiRow {
                 id: get_text_lossy(row, 0)?,
                 row: get_text_lossy(row, 1)?,
-                offsets: get_text_lossy(row, 2)?,
-                last: row.get(3).unwrap_or(false),
+                coords: get_blob(row, 2)?,
+                offsets: get_blob(row, 3)?,
+                last: row.get(4).unwrap_or(false),
             })
         },
     )?.filter_map(|r| r.map_err(|e| eprintln!("row error: {e}")).ok()).collect();

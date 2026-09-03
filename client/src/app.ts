@@ -822,7 +822,7 @@ function rowToSubjects(row: string[]): string[] {
       const days = new Map([['1', '土曜、日曜'], ['2', '土曜・日曜・休日'], ['3', '日曜・休日'], ['4', '競輪開催日'], ['5', '競馬開催日'], ['6', '場内馬券発売日'], ['7', '競艇開催日'], ['8', '工事実施日']]);
       subject += ` ${days.get(row[i + 4]) || row[i + 4]}`;
     }
-    if (row[i + 2] != '' && row[i + 3] && !(row[i + 2].padStart(4, '0') == '0000' && row[i + 3] == '2400')) {
+    if (row[i + 2] != '' && row[i + 3] && !(row[i + 2].padStart(4, '0') == '0000' && (row[i + 3].padStart(4, '0') == '0000' || row[i + 3].padStart(4, '0') == '2400'))) {
       subject += ` ${Number(row[i + 2].padStart(4, '0').substring(0, 2))}`;
       if (row[i + 2].padStart(4, '0').substring(2, 4) != '00') {
         subject += `.${row[i + 2].padStart(4, '0').substring(2, 4)}`;
@@ -1125,7 +1125,7 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
           }
           return true;
         })() && (() => {
-          if (row_slice[2] != '' && row_slice[3]) {
+          if (row_slice[2] != '' && row_slice[3] && !(row_slice[2].padStart(4, '0') == '0000' && (row_slice[3].padStart(4, '0') == '0000' || row_slice[3].padStart(4, '0') == '2400'))) {
             any = true;
             let start = Number(row_slice[2]);
             let end = Number(row_slice[3]) - 1;

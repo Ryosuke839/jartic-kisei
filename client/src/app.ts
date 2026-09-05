@@ -995,6 +995,10 @@ function getDistance(coord1: {lat: number, lng: number}, coord2: {lat: number, l
   return Math.sqrt((coord2.lat - coord1.lat) * (coord2.lat - coord1.lat) + (coord2.lng - coord1.lng) * (coord2.lng - coord1.lng) * 0.64);
 }
 
+function isPointKisei(r: KiseiResponse): boolean {
+  return r.coords.length == 1 || r.row[11] == '12' || r.row[11] == '13' || r.row[11] == '63';
+}
+
 let rendering = false;
 let first = true;
 function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [string, number][] | null = null): void {
@@ -1154,7 +1158,7 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
   }
   for (const [key, objs] of currentPolylines) {
     const r = keys.get(key);
-    const zoomDependent = r && (r.coords.length == 1 || r.row[11] == '12' || r.row[11] == '13' || r.row[11] == '63');
+    const zoomDependent = r && isPointKisei(r);
     if (r && !(zoom < 17 && zoomDependent)) {
       for (const obj of objs) {
         if (obj != null) {
@@ -1187,7 +1191,7 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
   for (const [key, r] of keys) {
     const icon = getIcon(r.row, iconSize);
     const color = getColor(r.row);
-    if (r.coords.length == 1 || r.row[11] == '12' || r.row[11] == '13' || r.row[11] == '63') {
+    if (isPointKisei(r)) {
       if (!currentMarkers.has(key)) {
         const marker = new google.maps.Marker({
           clickable: true,
@@ -1198,7 +1202,8 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
         });
         currentMarkers.set(key, [marker]);
         marker.addListener('click', (e: google.maps.MapMouseEvent) => showInfo(key, e));
-        if (zoom >= 17 && (r.coords.length > 1 || r.row[34] || r.row[36] || r.row[38]) && !currentPolylines.has(key)) {
+      }
+      if (zoom >= 17 && (r.coords.length > 1 || r.row[34] || r.row[36] || r.row[38]) && !currentPolylines.has(key)) {
           const polylines = new Array<google.maps.Polyline>;
           if (r.row[11] == '12' && r.row[1] == '8') {
             const path = [r.coords[0]];
@@ -1271,7 +1276,6 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
           }
           currentPolylines.set(key, polylines);
         }
-      }
     } else {
       if (r.coords.at(0)?.lat == r.coords.at(-1)?.lat && r.coords.at(0)?.lng == r.coords.at(-1)?.lng) {
         if (!currentPolygons.has(key)) {
@@ -1428,35 +1432,55 @@ function initMap(): void {
     }
     const iconSize = Math.pow(2, Math.max((zoom ? zoom : 0) - 17, 0) / 2) * 16;
 
-    if (zoom != last_zoom) {
-      for (const [key, objs] of currentMarkers) {
-        for (const obj of objs) {
-          if (obj != null) {
-            const icon = obj.getIcon();
-            if (icon !== null && typeof icon === 'object' && 'url' in icon) {
-              obj.setIcon({
-                ...icon,
-                anchor: new google.maps.Point(iconSize / 2, iconSize / 2),
-                origin: null,
-                scaledSize: new google.maps.Size(iconSize, iconSize),
-                size: null,
-              });
+    if (zoom < 15 || zoom != last_zoom) {
+      while (rendering);
+      rendering = true;
+      if (zoom < 15) {
+        for (const objs of currentMarkers.values()) {
+          for (const obj of objs) {
+            if (obj != null) {
+              obj.setMap(null);
+            }
+          }
+        }
+        currentMarkers.clear();
+      } else {
+        const stepChanged = Math.max(18 - zoom, 0) != Math.max(18 - last_zoom, 0);
+        const iconSizeChanged = Math.max(zoom - 17, 0) != Math.max(last_zoom - 17, 0);
+        if (stepChanged) {
+          const kiseiById = new Map(kiseis.map(k => [k.id, k]));
+          for (const [key, objs] of Array.from(currentMarkers)) {
+            const r = kiseiById.get(key);
+            if (r && isPointKisei(r)) {
+              continue;
+            }
+            for (const obj of objs) {
+              if (obj != null) {
+                obj.setMap(null);
+              }
+            }
+            currentMarkers.delete(key);
+          }
+        }
+        if (iconSizeChanged) {
+          for (const objs of currentMarkers.values()) {
+            for (const obj of objs) {
+              if (obj != null) {
+                const icon = obj.getIcon();
+                if (icon !== null && typeof icon === 'object' && 'url' in icon) {
+                  obj.setIcon({
+                    ...icon,
+                    anchor: new google.maps.Point(iconSize / 2, iconSize / 2),
+                    origin: null,
+                    scaledSize: new google.maps.Size(iconSize, iconSize),
+                    size: null,
+                  });
+                }
+              }
             }
           }
         }
       }
-    }
-    if (zoom < 15 || zoom != last_zoom) {
-      while (rendering);
-      rendering = true;
-      for (const [key, objs] of currentMarkers) {
-        for (const obj of objs) {
-          if (obj != null) {
-            obj.setMap(null);
-          }
-        }
-      }
-      currentMarkers.clear();
       rendering = false;
       if (zoom < 15 && document.getElementById('detail')!.style.display == 'none') {
         lastBounds = new google.maps.LatLngBounds;

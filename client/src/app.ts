@@ -533,7 +533,7 @@ function speedSign(row: string[]): string {
   return '35';
 }
 function getIcon(row: string[], iconSize: number): google.maps.Icon | undefined {
-  const signs = new Set(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '19', '21', '24', '27', '49', '50', '51', '53', '54', '55', '56', '57', '58', '60', '61', '62', '63', '65', '70', '71', '72', '76', '77', '81', '82', '83', '84', '85', '86', '87', '88', '90', '92', '93', '94', '97', '98', '100', '103', '106', '110', '111', '112', '113', '114', '115', '116', '117', '118', '119']);
+  const signs = new Set(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '19', '21', '24', '27', '49', '50', '51', '53', '54', '55', '56', '57', '58', '60', '61', '62', '63', '65', '70', '71', '72', '76', '77', '81', '82', '83', '84', '85', '86', '87', '88', '90', '92', '93', '94', '97', '98', '100', '101', '102', '103', '106', '110', '111', '112', '113', '114', '115', '116', '117', '118', '119']);
   const ident = (row: string[]) => row[11];
   const check = (row: string[], offset: number, types: number[]): boolean => {
     const bits = types.map((_, i) => row
@@ -562,6 +562,8 @@ function getIcon(row: string[], iconSize: number): google.maps.Icon | undefined 
     if (check(row, 45, [0b110000000, 0b1111111, 0b101111101, 0]))
       if (check(row, 45, [0, 0, 0b101111101, 0]))
         return '5_truck';
+      else if (check(row, 45, [0b10000000, 0b1111010, 0, 0]))
+        return '5_bus';
       else
         return '5_heavy';
     if (check(row, 90, [0, 0, 0b10000000, 0b1000101100]))
@@ -750,8 +752,7 @@ function rowToSubjects(row: string[]): string[] {
       subject += `${Number(row[i + 1].padStart(4, '0').substring(2, 4))}日`;
     }
     if (row[i + 4]) {
-      const days = new Map([['1', '土曜、日曜'], ['2', '土曜・日曜・休日'], ['3', '日曜・休日'], ['4', '競輪開催日'], ['5', '競馬開催日'], ['6', '場内馬券発売日'], ['7', '競艇開催日'], ['8', '工事実施日']]);
-      subject += ` ${days.get(row[i + 4]) || row[i + 4]}`;
+      subject += ` ${codeMap.get(9)?.get(row[i + 4]) || row[i + 4]}`;
     }
     if (row[i + 2] != '' && row[i + 3] && !(row[i + 2].padStart(4, '0') == '0000' && (row[i + 3].padStart(4, '0') == '0000' || row[i + 3].padStart(4, '0') == '2400'))) {
       subject += ` ${Number(row[i + 2].padStart(4, '0').substring(0, 2))}`;
@@ -1041,6 +1042,12 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
                   return !visible_day.weekday;
                 case '3':
                   return !(visible_day.weekday || visible_day.saturday);
+                case '4':
+                  return !(visible_day.weekday || visible_day.sunday || visible_day.holiday);
+                case '5':
+                  return !(visible_day.weekday || visible_day.saturday || visible_day.holiday);
+                case '6':
+                  return !(visible_day.weekday || visible_day.saturday || visible_day.sunday);
               }
             } else {
               switch (row_slice[4]) {
@@ -1050,6 +1057,12 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
                   return visible_day.saturday || visible_day.sunday || visible_day.holiday;
                 case '3':
                   return visible_day.sunday || visible_day.holiday;
+                case '4':
+                  return visible_day.saturday;
+                case '5':
+                  return visible_day.sunday;
+                case '6':
+                  return visible_day.holiday;
               }
             }
             return !negate;
@@ -1231,7 +1244,14 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
             }
           }
           for (let i = 34; i < 40; i += 2) {
-            r.row[i].split(';').map(c => c.split(' ').map(Number)).forEach(coord => {
+            if (!r.row[i]) {
+              continue;
+            }
+            r.row[i].split(';').forEach(c => {
+              const coord = c.trim().split(/\s+/).map(Number);
+              if (coord.length < 2 || !Number.isFinite(coord[0]) || !Number.isFinite(coord[1])) {
+                return;
+              }
               const polyline = new google.maps.Polyline({
                 clickable: true,
                 path: [r.coords[0], {lat: coord[1], lng: coord[0]}],

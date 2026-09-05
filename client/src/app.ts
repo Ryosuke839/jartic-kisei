@@ -589,6 +589,11 @@ function getIcon(row: string[], iconSize: number): google.maps.Icon | undefined 
     }],
     ['5', prohibit],
     ['7', prohibit],
+    ['21', (row: string[]) => {
+      if (check(row, 45, [0b110000000, 0b1111111, 0b101111101, 0]))
+        return '21_truck';
+      return '21';
+    }],
     ['100', (_) => '70'],
     ['101', (_) => '71'],
     ['102', (_) => '72'],

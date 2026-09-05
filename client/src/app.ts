@@ -1367,6 +1367,7 @@ function initMap(): void {
     minZoom: 5,
     mapId: '3370b5d2a2f454b2',
     restriction: {latLngBounds: {east: 145.82, north: 45.53, south: 24.04, west: 122.93}},
+    gestureHandling: 'greedy',
     noClear: true,
   });
   lastSuffix = location.hash;

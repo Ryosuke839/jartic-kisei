@@ -544,106 +544,46 @@ function speedSign(row: string[]): string {
 function getIcon(row: string[], iconSize: number): google.maps.Icon | undefined {
   const signs = new Set(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '19', '21', '24', '27', '49', '50', '51', '53', '54', '55', '56', '57', '58', '60', '61', '62', '63', '65', '70', '71', '72', '76', '77', '81', '82', '83', '84', '85', '86', '87', '88', '90', '92', '93', '94', '97', '98', '100', '103', '106', '110', '111', '112', '113', '114', '115', '116', '117', '118', '119']);
   const ident = (row: string[]) => row[11];
-  const check = (row: string[], offset: number, types: string[]): boolean => {
-    if (row[offset] == '' && row[offset + 1] == '' && row[offset + 2] == '' && row[offset + 3] == '') {
+  const check = (row: string[], offset: number, types: number[]): boolean => {
+    const bits = types.map((_, i) => row
+      .slice(offset + i, offset + i + 45)
+      .filter((_, i) => i % 9 === 0)
+      .map(s => parseInt(s || '0', 2))
+      .reduce((a, b) => a | b, 0));
+    if (bits.every(bit => bit == 0)) {
       return false;
     }
-    for (let i = 0; i < 45; i += 9) {
-      if (row[i + offset] == '' && row[i + offset + 1] == '' && row[i + offset + 2] == '' && row[i + offset + 3] == '') {
-        break;
-      }
-      if ((row[i + offset] || '0') != types[0] || (row[i + offset + 1] || '0') != types[1] || (row[i + offset + 2] || '0') != types[2] || (row[i + offset + 3] || '0') != types[3]) {
-        return false;
-      }
-    }
-    return true;
+    return bits.every((bit, i) => (bit & (i == 3 ? 0b11111111111111 : 0b111111111111111) & ~types[i]) == 0) && bits.some((bit, i) => (bit & types[i]) != 0);
   };
   const prohibit = (row: string[]) => {
-    if (check(row, 45, ['0', '0', '0', '100000']))
-      if (check(row, 90, ['0', '0', '0', '100']))
+    if (check(row, 45, [0, 0, 0, 0b100000]))
+      if (check(row, 90, [0, 0, 0, 0b1000000100]))
         return '5_cart';
-    if (check(row, 45, ['10', '0', '0', '0'])) {
-      if (check(row, 90, ['0', '0', '10000000', '10']))
+    if (check(row, 45, [0b10, 0, 0, 0b1000])) {
+      if (check(row, 90, [0b1000000000, 0, 0b10000000, 0b11]))
         return '5_car';
-      if (check(row, 90, ['0', '0', '0', '10']))
-        return '5_car';
-      if (check(row, 90, ['0', '0', '0', '1']))
-        return '5_car';
+      if (check(row, 45, [0, 0, 0, 0b1000]))
+        return '5_motorcycle';
       return '5_motor';
     }
-    if (check(row, 45, ['10', '0', '0', '1000']))
-      return '5_motor';
-    if (check(row, 45, ['0', '0', '100100100', '100000000000000']))
-      return '5_truck';
-    if (check(row, 45, ['0', '0', '100100100', '0']))
-      return '5_truck';
-    if (check(row, 45, ['0', '0', '101101100', '0']))
-      return '5_truck';
-    if (check(row, 45, ['0', '0', '10000', '0']))
-      return '5_truck';
-    if (check(row, 45, ['0', '10', '100100100', '0']))
-      return '5_heavy';
-    if (check(row, 45, ['0', '1000', '10000', '0']))
-      return '5_heavy';
-    if (check(row, 45, ['100000000', '1', '100000000', '0']))
-      return '5_heavy';
-    if (check(row, 45, ['100000000', '1', '0', '0']))
-      return '5_heavy';
-    if (check(row, 45, ['0', '1', '100000000', '0']))
-      return '5_heavy';
-    if (check(row, 45, ['0', '1', '100001000', '0']))
-      return '5_heavy';
-    if (check(row, 45, ['0', '1', '100000100', '0']))
-      return '5_heavy';
-    if (check(row, 45, ['0', '1', '0', '0']))
-      return '5_heavy';
-    if (check(row, 45, ['0', '100', '0', '0']))
-      return '5_heavy';
-    if (check(row, 45, ['100000000','1','101001000','0']))
-      return '5_heavy';
-    if (check(row, 45, ['100000000','101','100000000','0']))
-      return '5_heavy';
-    if (check(row, 45, ['10000000','10','100100100','0']))
-      return '5_heavy';
-    if (check(row, 45, ['100000000','1','100010000','0']))
-      if (check(row, 90, ['10000000','10','0','0']))
+    if (check(row, 45, [0b1000000000, 0, 0, 0]))
+      return '5_car';
+    if (check(row, 45, [0b110000000, 0b1111111, 0b101111101, 0]))
+      if (check(row, 45, [0, 0, 0b101111101, 0]))
         return '5_truck';
-    if (check(row, 45, ['100000000','1001','100010000','0']))
-      if (check(row, 90, ['10000000','10','0','0']))
-        return '5_truck';
-    if (check(row, 90, ['0', '0', '0', '100']))
+      else
+        return '5_heavy';
+    if (check(row, 90, [0, 0, 0b10000000, 0b1000101100]))
       return '5_motor';
-    if (check(row, 90, ['0', '0', '0', '100000']))
-      return '5_motor';
-    if (check(row, 90, ['0', '0', '0', '100000000000100']))
-      return '5_motor';
-    if (check(row, 90, ['0', '0', '0', '100000000100000']))
-      return '5_motor';
-    if (check(row, 90, ['0', '0', '0', '101']))
+    if (check(row, 90, [0, 0, 0b10000000, 0b101111]))
       return '5_car';
-    if (check(row, 45, ['0', '0', '0', '100']))
+      if (check(row, 45, [0, 0, 0, 0b1000000100]))
       return '5_bicycle';
-    if (check(row, 45, ['0', '0', '0', '100000000000100']))
-      return '5_bicycle';
-    if (check(row, 45, ['0', '0', '0', '100000']))
+    if (check(row, 45, [0, 0, 0, 0b1001100100]))
       return '5_light';
-    if (check(row, 45, ['0', '0', '0', '100100']))
-      return '5_light';
-    if (check(row, 45, ['0', '0', '0', '100000000100000']))
-      return '5_light';
-    if (check(row, 90, ['0', '0', '0', '101010']))
+    if (check(row, 90, [0, 0, 0, 0b101010]))
       return '5_car';
-    if (check(row, 90, ['0', '0', '0', '100001']))
-      return '5_car';
-    if (check(row, 90, ['0', '0', '10000000','100001']))
-      return '5_car';
-    if (check(row, 45, ['0', '0', '0', '1010']))
-      return '5_motorcycle';
-    if (check(row, 45, ['0', '0', '0', '1000']))
-      return '5_motorcycle';
-    if (check(row, 45, ['0', '0', '0', '10']))
-      return '5_motorcycle';
-    if (check(row, 45, ['0', '0', '0', '1']))
+    if (check(row, 45, [0, 0, 0, 0b1011]))
       return '5_motorcycle';
     return '5';
   };
@@ -662,7 +602,7 @@ function getIcon(row: string[], iconSize: number): google.maps.Icon | undefined 
     ['103', (_) => '71'],
     ['110', (_) => '22_bicycle'],
     ['111', (row: string[]) => {
-      if (check(row, 45, ['0', '0', '0', '100']))
+      if (check(row, 45, [0, 0, 0, 0b100]))
         return '22_bicycle';
       for (let i = 0; i < 45; i += 9) {
         const b = Number(row[46 + i] || '0');

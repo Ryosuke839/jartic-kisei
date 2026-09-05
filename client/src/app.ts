@@ -1150,7 +1150,8 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
   }
   for (const [key, objs] of currentPolylines) {
     const r = keys.get(key);
-    if (r) {
+    const zoomDependent = r && (r.coords.length == 1 || r.row[11] == '12' || r.row[11] == '13' || r.row[11] == '63');
+    if (r && !(zoom < 17 && zoomDependent)) {
       for (const obj of objs) {
         if (obj != null) {
           obj.setOptions({

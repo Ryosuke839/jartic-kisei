@@ -1318,7 +1318,7 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
       const markers = new Array<google.maps.Marker | null>;
       if (r.row[11] != '20' && r.row[11] != '52' && r.row[11] != '107') {
         const step = 0.001 * Math.pow(2, Math.max(18 - (zoom || 18), 0) / 2);
-        let next = ((parseInt(key.substring(20, 24).split('').reverse().join('')) + parseInt(key.substring(24, 28).split('').reverse().join('')) + parseInt(key.substring(28, 32).split('').reverse().join(''))) % 10000) / 10000 * (r.offsets[r.offsets.length - 1] < step ? r.offsets[r.offsets.length - 1] : step);
+        let next = (Math.imul(parseInt(key.slice(-8), 10), 2654435761) >>> 0) / 4294967296 * (r.offsets[r.offsets.length - 1] < step ? r.offsets[r.offsets.length - 1] : step);
         let last = 0;
         for (let i = 1; i < r.offsets.length; ++i) {
           while (next < r.offsets[i]) {

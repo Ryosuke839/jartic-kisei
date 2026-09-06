@@ -1000,10 +1000,6 @@ function getDistance(coord1: {lat: number, lng: number}, coord2: {lat: number, l
   return Math.sqrt((coord2.lat - coord1.lat) * (coord2.lat - coord1.lat) + (coord2.lng - coord1.lng) * (coord2.lng - coord1.lng) * 0.64);
 }
 
-function isPointKisei(r: KiseiResponse): boolean {
-  return r.coords.length == 1 || r.row[11] == '12' || r.row[11] == '13' || r.row[11] == '63';
-}
-
 let rendering = false;
 let first = true;
 function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [string, number][] | null = null): void {
@@ -1163,7 +1159,7 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
   }
   for (const [key, objs] of currentPolylines) {
     const r = keys.get(key);
-    const zoomDependent = r && isPointKisei(r);
+    const zoomDependent = r && r.row[12] == '1';
     if (r && !(zoom < 17 && zoomDependent)) {
       for (const obj of objs) {
         if (obj != null) {
@@ -1196,7 +1192,7 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
   for (const [key, r] of keys) {
     const icon = getIcon(r.row, iconSize);
     const color = getColor(r.row);
-    if (isPointKisei(r)) {
+    if (r.row[12] == '1') {
       if (!currentMarkers.has(key)) {
         const marker = new google.maps.Marker({
           clickable: true,
@@ -1282,7 +1278,7 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
           currentPolylines.set(key, polylines);
         }
     } else {
-      if (r.coords.at(0)?.lat == r.coords.at(-1)?.lat && r.coords.at(0)?.lng == r.coords.at(-1)?.lng) {
+      if (r.row[12] == '3') {
         if (!currentPolygons.has(key)) {
           const polygon = new google.maps.Polygon({
             clickable: true,
@@ -1457,7 +1453,7 @@ function initMap(): void {
           const kiseiById = new Map(kiseis.map(k => [k.id, k]));
           for (const [key, objs] of Array.from(currentMarkers)) {
             const r = kiseiById.get(key);
-            if (r && isPointKisei(r)) {
+            if (r && r.row[12] == '1') {
               continue;
             }
             for (const obj of objs) {

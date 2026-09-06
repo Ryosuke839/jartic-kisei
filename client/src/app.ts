@@ -1379,6 +1379,7 @@ function render(bounds: google.maps.LatLngBounds, zoom: number, filterKeys: [str
 let renderLast = () => {};
 
 function initMap(): void {
+  readForm();
   const params = location.pathname.match(/\/@(-?[\d.]+),(-?[\d.]+),(-?[\d.]+)z(?:\/(\w+)\/(\w+)\/(-?[\d.]+),(-?[\d.]+))?$/);
   lastCenter = new google.maps.LatLng(params ? Number(params[1]) : 35.7, params ? Number(params[2]) : 139.7);
   lastZoom = params ? Number(params[3]) : 9;
@@ -1592,6 +1593,97 @@ function readState() {
 
 addEventListener('popstate', readState);
 
+function updateKiseiParents(check: HTMLInputElement): void {
+  let current: Element = check;
+  while (current) {
+    const parent = current.closest('ul')?.parentNode;
+    const next = parent instanceof Element ? parent.querySelector('input') : null;
+    if (!parent || !(next instanceof HTMLInputElement) || current === next) {
+      break;
+    }
+    current = next;
+    const children = parent instanceof Element ? parent.querySelector('ul')?.querySelectorAll('input') : null;
+    if (!children) {
+      continue;
+    }
+    const checkStatus = Array.from(children).map(e => (e as HTMLInputElement).checked);
+    const every = checkStatus.every(Boolean);
+    const some = checkStatus.some(Boolean);
+    next.checked = every;
+    next.indeterminate = !every && every != some;
+  }
+}
+
+function readForm(): void {
+  const kiseiTypes = document.getElementById('kisei-types');
+  if (kiseiTypes) {
+    kiseiTypes.querySelectorAll('input[name]').forEach(el => {
+      if (!(el instanceof HTMLInputElement)) {
+        return;
+      }
+      visible_kisei.set(el.name, el.checked);
+      updateKiseiParents(el);
+    });
+    (kiseiTypes.querySelector('span.summary') as HTMLSpanElement).innerText = [...visible_kisei.values()].filter(v => v).length + '/' + visible_kisei.size;
+  }
+
+  const display = document.querySelector('#option input[name="display"]:checked');
+  if (display instanceof HTMLInputElement) {
+    transparent_kisei = display.value == 'transparent';
+  }
+
+  const vehicleTypes = document.getElementById('vehicle-types');
+  if (vehicleTypes) {
+    vehicleTypes.querySelectorAll('input[name]').forEach(el => {
+      if (el instanceof HTMLInputElement) {
+        visible_vehicle[Number(el.name)] = el.checked;
+      }
+    });
+    let types = '';
+    for (let i = 0; i < 15; ++i) {
+      let sum = 0;
+      for (let j = 0; j < 4; ++j) {
+        const e = vehicleTypes.querySelector(`input[name="${i * 4 + j}"]`);
+        sum <<= 1;
+        sum |= (e as HTMLInputElement)?.checked ? 1 : 0;
+      }
+      types += sum.toString(16);
+    }
+    const select = document.getElementById('vehicle-preset') as HTMLSelectElement;
+    const option = select.options.namedItem(types);
+    select.options.selectedIndex = option?.index ?? select.options.length - 1;
+    (vehicleTypes.querySelector('span.summary') as HTMLSpanElement).innerText = select.selectedOptions.item(0)!.innerText;
+  }
+
+  const dayAndTime = document.getElementById('day-and-time');
+  if (dayAndTime) {
+    dayAndTime.querySelectorAll('input[type="checkbox"]').forEach(el => {
+      if (el instanceof HTMLInputElement) {
+        visible_day[el.name.substring(4) as keyof typeof visible_day] = el.checked;
+      }
+    });
+    const start = Number((dayAndTime.querySelector('input[name="time_from"]') as HTMLInputElement).value.replace(':', ''));
+    let end = Number((dayAndTime.querySelector('input[name="time_to"]') as HTMLInputElement).value.replace(':', ''));
+    if (end < start) {
+      end += 2400;
+    }
+    visible_time_center = (start + end) / 2;
+    if (visible_time_center >= 2400) {
+      visible_time_center -= 2400;
+    }
+    visible_time_delta = end - start;
+    const names = new Map<string, string>([['weekday', '平日'], ['saturday', '土曜'], ['sunday', '日曜'], ['holiday', '休日']]);
+    (dayAndTime.querySelector('span.summary') as HTMLSpanElement).innerText =
+      (Object.entries(visible_day).every(([_, v]) => v) ? '全日' : Object.entries(visible_day).filter(([_, v]) => v).map(([k, _]) => names.get(k as keyof typeof visible_day)).join('・')) + ' ' +
+      (visible_time_delta >= 2359 ? '終日' : (dayAndTime.querySelector('input[name="time_from"]') as HTMLInputElement).value + (visible_time_delta == 0 ? '' : '〜' + (dayAndTime.querySelector('input[name="time_to"]') as HTMLInputElement).value));
+  }
+}
+
+addEventListener('pageshow', () => {
+  readForm();
+  renderLast();
+});
+
 addEventListener('change', e => {
   const check = e.target;
   if (!(check instanceof HTMLElement) || !check.closest('#option') || check.parentNode == null) {
@@ -1613,27 +1705,7 @@ addEventListener('change', e => {
         }
       });
 
-      let current = check;
-      while (current) {
-        const parent = current.closest('ul')?.parentNode;
-        const next = parent?.querySelector('input');
-        if (!parent || !next) {
-          break;
-        }
-        if (current === next) {
-          break;
-        }
-        current = next;
-        const children = parent.querySelector('ul')?.querySelectorAll('input');
-        if (!children) {
-          continue;
-        }
-        const checkStatus = Array.from(children).map(e => e.checked);
-        const every  = checkStatus.every(Boolean);
-        const some = checkStatus.some(Boolean);
-        next.checked = every;   
-        next.indeterminate = !every && every != some;
-      }
+      updateKiseiParents(check);
 
       renderLast();
     }

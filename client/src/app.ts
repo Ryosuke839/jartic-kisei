@@ -641,14 +641,17 @@ function getIcon(row: string[], iconSize: number): google.maps.Icon | undefined 
 }
 function speedColor(row: string[]): string {
   const sp = Number(row[137]);
-  if (sp >= 100) return '#00FFFF';
-  if (sp >= 80) return '#00FFC0';
-  if (sp >= 70) return '#00FFA0';
-  if (sp >= 60) return '#00FF80';
-  if (sp >= 50) return '#00FF60';
-  if (sp >= 40) return '#00FF40';
-  if (sp >= 30) return '#00FF20';
-  return '#00FF00';
+  if (sp >= 120) return '#00FFFF';
+  if (sp >= 110) return '#00FFE0';
+  if (sp >= 100) return '#00FFC0';
+  if (sp >= 90) return '#00FFA0';
+  if (sp >= 80) return '#00FF80';
+  if (sp >= 70) return '#00FF40';
+  if (sp >= 60) return '#00FF00';
+  if (sp >= 50) return '#40F000';
+  if (sp >= 40) return '#80E000';
+  if (sp >= 30) return '#C0D000';
+  return '#FFC000';
 }
 function getColor(row: string[]): string {
   const type = row[11];
@@ -684,7 +687,7 @@ function getColor(row: string[]): string {
     ['25', '#FF0000'], // 牽引自動車の自動車専用道路第一通行帯通行指定区間
     ['26', '#FF0000'], // 車線境界線
     ['27', '#FF0000'], // 軌道敷内通行可
-    ['49', '#00FFFF'], // 最低速度
+    ['49', '#00FFC0'], // 最低速度
     ['50', '#FF0000'], // 車両横断禁止
     ['51', '#FF0000'], // 転回禁止
     ['52', '#FF7B00'], // 進路変更禁止
